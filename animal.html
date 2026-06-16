@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>英中翻翻樂</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f8f8f6;min-height:100vh;}
+nav{background:#fff;border-bottom:1px solid #eee;padding:0 1rem;display:flex;align-items:center;height:48px;gap:8px;}
+.nav-logo{font-size:15px;font-weight:700;color:#1a1a1a;text-decoration:none;white-space:nowrap;}
+.nav-links{display:flex;gap:4px;margin-left:auto;flex-wrap:nowrap;}
+.nav-link{font-size:12px;padding:5px 8px;border-radius:7px;color:#666;text-decoration:none;}
+.nav-link.active{background:#1a1a1a;color:#fff;}
+.container{max-width:680px;margin:0 auto;padding:1rem;}
+.screen{display:none;}.screen.active{display:block;}
+.menu-title{font-size:20px;font-weight:700;color:#1a1a1a;margin-bottom:4px;text-align:center;}
+.menu-sub{font-size:13px;color:#888;text-align:center;margin-bottom:1.5rem;}
+.section-label{font-size:11px;color:#888;margin-bottom:6px;letter-spacing:.06em;text-transform:uppercase;}
+.size-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1rem;}
+.size-btn{background:#fff;border:1.5px solid #e5e5e5;border-radius:10px;padding:12px 6px;text-align:center;cursor:pointer;}
+.size-btn.sel{border:2px solid #1D9E75;background:#E1F5EE;}
+.size-label{font-size:16px;font-weight:700;color:#1a1a1a;}
+.size-sub{font-size:11px;color:#888;margin-top:3px;}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1.5rem;}
+.mode-btn{background:#fff;border:1.5px solid #e5e5e5;border-radius:10px;padding:12px;text-align:center;cursor:pointer;}
+.mode-btn.sel{border:2px solid #378ADD;background:#E6F1FB;}
+.mode-icon{font-size:20px;margin-bottom:4px;}
+.mode-name{font-size:13px;font-weight:700;color:#1a1a1a;}
+.mode-desc{font-size:11px;color:#888;margin-top:2px;}
+.start-btn{width:100%;padding:13px;font-size:15px;font-weight:700;border-radius:10px;background:#185FA5;color:#fff;border:none;cursor:pointer;}
+.turn-bar{display:flex;gap:8px;margin-bottom:8px;}
+.turn-chip{flex:1;padding:8px;border-radius:10px;text-align:center;font-size:12px;font-weight:700;border:2px solid transparent;transition:all .2s;}
+.turn-chip.p1{background:#EEF3FF;color:#3451B2;border-color:#C7D2FE;}
+.turn-chip.p2{background:#FFF0F6;color:#9D174D;border-color:#FBCFE8;}
+.turn-chip.active.p1{background:#3451B2;color:#fff;border-color:#3451B2;}
+.turn-chip.active.p2{background:#BE185D;color:#fff;border-color:#BE185D;}
+.chip-score{font-size:18px;font-weight:700;}
+.chip-label{font-size:10px;opacity:.85;margin-top:1px;}
+.topbar{display:flex;gap:6px;margin-bottom:8px;}
+.stat{background:#fff;border:1px solid #eee;border-radius:8px;padding:5px 8px;text-align:center;flex:1;}
+.stat-label{font-size:10px;color:#888;}
+.stat-val{font-size:16px;font-weight:700;color:#1a1a1a;}
+.combo-badge{background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:5px 8px;font-size:11px;font-weight:700;color:#633806;display:flex;align-items:center;justify-content:center;white-space:nowrap;}
+.msg-bar{text-align:center;font-size:13px;font-weight:600;min-height:20px;margin-bottom:6px;color:#888;}
+.msg-bar.ok{color:#166534;}.msg-bar.err{color:#991B1B;}
+.msg-bar.p1c{color:#3451B2;}.msg-bar.p2c{color:#9D174D;}
+.grid{display:grid;gap:4px;margin-bottom:8px;}
+.cell{perspective:900px;cursor:pointer;touch-action:manipulation;}
+.inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .32s cubic-bezier(.4,0,.2,1);}
+.cell.flip .inner,.cell.done .inner{transform:rotateY(180deg);}
+.face{position:absolute;inset:0;backface-visibility:hidden;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid transparent;}
+.back{background:#e8e8e4;border-color:#d5d5d0;}
+.back-q{font-weight:700;color:#aaa;}
+.front{transform:rotateY(180deg);background:#fff;border-color:#e5e5e5;gap:1px;}
+.c-icon{line-height:1;}.c-en{font-weight:600;color:#555;}.c-zh{color:#bbb;}
+.flip-p1 .back{background:#DBEAFE;border-color:#93C5FD;}
+.flip-p2 .back{background:#FCE7F3;border-color:#F9A8D4;}
+.done-p1 .front{background:#DBEAFE;border-color:#60A5FA;}.done-p1 .c-en{color:#1E40AF;}.done-p1 .c-zh{color:#3B82F6;}
+.done-p2 .front{background:#FCE7F3;border-color:#F472B6;}.done-p2 .c-en{color:#9D174D;}.done-p2 .c-zh{color:#EC4899;}
+.done-solo .front{background:#DCFCE7;border-color:#86EFAC;}.done-solo .c-en{color:#166534;}.done-solo .c-zh{color:#22C55E;}
+@keyframes wrongShake{0%,100%{transform:rotateY(180deg) translateX(0);}25%{transform:rotateY(180deg) translateX(-4px);}75%{transform:rotateY(180deg) translateX(4px);}}
+.cell.wrong .inner{animation:wrongShake .3s ease;}
+.cell.wrong .front{background:#FEE2E2;border-color:#FCA5A5;}
+@keyframes popDone{0%{transform:rotateY(180deg) scale(.85);}60%{transform:rotateY(180deg) scale(1.06);}100%{transform:rotateY(180deg) scale(1);}}
+.done-p1 .inner,.done-p2 .inner,.done-solo .inner{animation:popDone .25s ease forwards;}
+.btn-row{display:flex;gap:8px;margin-top:6px;}
+.btn-row button{flex:1;padding:9px;font-size:12px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer;}
+.win-overlay{background:#fff;border:1px solid #eee;border-radius:14px;padding:1.25rem;margin-bottom:10px;}
+.win-title{font-size:20px;font-weight:700;color:#1a1a1a;margin-bottom:6px;text-align:center;}
+.win-sub{font-size:13px;color:#888;text-align:center;margin-bottom:10px;}
+.stars{font-size:26px;letter-spacing:4px;margin-bottom:6px;text-align:center;}
+.score-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;}
+.sc-card{border-radius:12px;padding:14px;text-align:center;}
+.sc-card.p1c{background:#DBEAFE;border:2px solid #93C5FD;}.sc-card.p2c{background:#FCE7F3;border:2px solid #F9A8D4;}
+.sc-card.winner{box-shadow:0 0 0 3px #22C55E;}
+.sc-name{font-size:12px;font-weight:700;margin-bottom:4px;}
+.sc-name.p1c{color:#1E40AF;}.sc-name.p2c{color:#9D174D;}
+.sc-pts{font-size:26px;font-weight:700;}
+.sc-pts.p1c{color:#1D4ED8;}.sc-pts.p2c{color:#BE185D;}
+.sc-detail{font-size:11px;color:#888;margin-top:3px;}
+.win-btn-row{display:flex;gap:8px;margin-top:10px;}
+.win-btn-row button{flex:1;padding:9px;font-size:13px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer;}
+.confetti-wrap{position:relative;height:0;overflow:visible;pointer-events:none;}
+.dot{position:absolute;width:7px;height:7px;border-radius:50%;animation:fall 1.3s ease forwards;}
+@keyframes fall{0%{transform:translateY(0) rotate(0);opacity:1;}100%{transform:translateY(160px) rotate(720deg);opacity:0;}}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html">🎮 翻翻樂</a>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">首頁</a>
+    <a class="nav-link active" href="animal.html">英文</a>
+    <a class="nav-link" href="math.html">數學</a>
+    <a class="nav-link" href="typing.html">打字</a>
+  </div>
+</nav>
+<div class="container">
+<div class="screen active" id="screen-menu">
+  <div class="menu-title">英中翻翻樂 🐾</div>
+  <div class="menu-sub">翻開兩張一樣的就消除，同步學英文！</div>
+  <div class="section-label">選擇大小</div>
+  <div class="size-grid">
+    <div class="size-btn sel" data-size="6" onclick="selSize(this)"><div class="size-label">6×6</div><div class="size-sub">18對・入門</div></div>
+    <div class="size-btn" data-size="8" onclick="selSize(this)"><div class="size-label">8×8</div><div class="size-sub">32對・進階</div></div>
+    <div class="size-btn" data-size="10" onclick="selSize(this)"><div class="size-label">10×10</div><div class="size-sub">50對・挑戰</div></div>
+  </div>
+  <div class="section-label">遊戲模式</div>
+  <div class="mode-grid">
+    <div class="mode-btn sel" data-mode="single" onclick="selMode(this)"><div class="mode-icon">👤</div><div class="mode-name">單人挑戰</div><div class="mode-desc">連擊獎勵 + 星星</div></div>
+    <div class="mode-btn" data-mode="multi" onclick="selMode(this)"><div class="mode-icon">👥</div><div class="mode-name">雙人對戰</div><div class="mode-desc">輪流翻，比分數</div></div>
+  </div>
+  <button class="start-btn" onclick="startGame()">開始遊戲</button>
+</div>
+<div class="screen" id="screen-game">
+  <div id="turn-bar-wrap"></div>
+  <div class="topbar" id="topbar"></div>
+  <div class="msg-bar" id="msg">翻開任意一張牌！</div>
+  <div class="confetti-wrap" id="confetti"></div>
+  <div class="grid" id="grid"></div>
+  <div id="win-area"></div>
+  <div class="btn-row">
+    <button onclick="goMenu()">← 選單</button>
+    <button onclick="restartGame()">重新開始</button>
+    <button onclick="location.href='math.html'">數學 →</button>
+  </div>
+</div>
+</div>
+<script>
+const ALL_ITEMS=[
+  {e:'🐱',en:'Cat',zh:'貓'},{e:'🐶',en:'Dog',zh:'狗'},{e:'🦁',en:'Lion',zh:'獅子'},
+  {e:'🐘',en:'Elephant',zh:'大象'},{e:'🐧',en:'Penguin',zh:'企鵝'},
+  {e:'🐰',en:'Rabbit',zh:'兔子'},{e:'🐯',en:'Tiger',zh:'老虎'},
+  {e:'🐵',en:'Monkey',zh:'猴子'},{e:'🦊',en:'Fox',zh:'狐狸'},{e:'🐻',en:'Bear',zh:'熊'},
+  {e:'🍎',en:'Apple',zh:'蘋果'},{e:'🍌',en:'Banana',zh:'香蕉'},{e:'🍕',en:'Pizza',zh:'披薩'},
+  {e:'🍦',en:'Ice cream',zh:'冰淇淋'},{e:'🍩',en:'Donut',zh:'甜甜圈'},
+  {e:'🍓',en:'Strawberry',zh:'草莓'},{e:'🌽',en:'Corn',zh:'玉米'},
+  {e:'🍉',en:'Watermelon',zh:'西瓜'},{e:'🍇',en:'Grapes',zh:'葡萄'},{e:'🥕',en:'Carrot',zh:'紅蘿蔔'},
+  {e:'🚗',en:'Car',zh:'汽車'},{e:'🚌',en:'Bus',zh:'公車'},{e:'✈️',en:'Airplane',zh:'飛機'},
+  {e:'🚀',en:'Rocket',zh:'火箭'},{e:'🚁',en:'Helicopter',zh:'直升機'},
+  {e:'🚲',en:'Bicycle',zh:'腳踏車'},{e:'🚂',en:'Train',zh:'火車'},{e:'⛵',en:'Sailboat',zh:'帆船'},
+  {e:'🌞',en:'Sun',zh:'太陽'},{e:'🌙',en:'Moon',zh:'月亮'},{e:'⭐',en:'Star',zh:'星星'},
+  {e:'🌈',en:'Rainbow',zh:'彩虹'},{e:'🌊',en:'Wave',zh:'海浪'},{e:'🌸',en:'Flower',zh:'花'},
+  {e:'❄️',en:'Snow',zh:'雪'},{e:'🌋',en:'Volcano',zh:'火山'},{e:'🍄',en:'Mushroom',zh:'蘑菇'},
+  {e:'⚽',en:'Soccer',zh:'足球'},{e:'🏀',en:'Basketball',zh:'籃球'},{e:'🎾',en:'Tennis',zh:'網球'},
+  {e:'🥊',en:'Boxing',zh:'拳擊'},{e:'🎯',en:'Darts',zh:'飛鏢'},{e:'🎳',en:'Bowling',zh:'保齡球'},
+  {e:'🪐',en:'Saturn',zh:'土星'},{e:'☄️',en:'Comet',zh:'彗星'},{e:'👨‍🚀',en:'Astronaut',zh:'太空人'},
+  {e:'🔭',en:'Telescope',zh:'望遠鏡'},{e:'🌍',en:'Earth',zh:'地球'},
+  {e:'🦋',en:'Butterfly',zh:'蝴蝶'},{e:'🐠',en:'Fish',zh:'魚'},
+];
+let selModeVal='single',selSizeVal=6;
+let cards=[],open=[],lock=false,tries=0,left=0,combo=0;
+let scores=[0,0],pairs_by=[0,0],turn=0;
+let PAIRS=18,COLS=6;
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=0|Math.random()*(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;}
+// ── 跨平台音效（iOS + Android）──────────────────────────
+let audioUnlocked=false,voiceEN=null,voiceZH=null;
+function loadVoices(){const vs=speechSynthesis.getVoices();voiceEN=vs.find(v=>v.lang==='en-US')||vs.find(v=>v.lang.startsWith('en'))||null;voiceZH=vs.find(v=>v.lang==='zh-TW')||vs.find(v=>v.lang.startsWith('zh'))||null;}
+if(window.speechSynthesis){loadVoices();speechSynthesis.addEventListener('voiceschanged',loadVoices);}
+function unlockAudio(){if(audioUnlocked||!window.speechSynthesis)return;const u=new SpeechSynthesisUtterance('');u.volume=0;speechSynthesis.speak(u);audioUnlocked=true;loadVoices();}
+document.addEventListener('touchstart',unlockAudio,{once:true});
+document.addEventListener('mousedown',unlockAudio,{once:true});
+let resumeTimer=null;
+function keepAlive(){resumeTimer=setInterval(()=>{if(window.speechSynthesis&&speechSynthesis.paused)speechSynthesis.resume();},200);}
+function stopKeepAlive(){clearInterval(resumeTimer);}
+function speakOne(text,lang,voice,onDone){
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang=lang;u.rate=0.95;u.pitch=1.05;u.volume=1;
+  if(voice)u.voice=voice;
+  u.onend=()=>{stopKeepAlive();onDone&&onDone();};
+  u.onerror=()=>{stopKeepAlive();onDone&&onDone();};
+  u.onstart=()=>keepAlive();
+  speechSynthesis.speak(u);
+}
+function speak(en,zh){
+  if(!window.speechSynthesis)return;
+  stopKeepAlive();speechSynthesis.cancel();
+  setTimeout(()=>{speakOne(en,'en-US',voiceEN,()=>{setTimeout(()=>speakOne(zh,'zh-TW',voiceZH,null),80);});},60);
+}
+function selMode(el){document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');selModeVal=el.dataset.mode;}
+function selSize(el){document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');selSizeVal=parseInt(el.dataset.size);}
+function goMenu(){speechSynthesis.cancel();show('screen-menu');}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function startGame(){show('screen-game');restartGame();}
+
+function calcCellSize(cols){
+  const container=document.querySelector('.container');
+  const w=container.offsetWidth - 32; // padding
+  const gap=4;
+  const cellW=Math.floor((w - gap*(cols-1))/cols);
+  return Math.min(cellW, 90); // cap at 90px
+}
+
+function restartGame(){
+  speechSynthesis.cancel();
+  COLS=selSizeVal;
+  if(selSizeVal===6) PAIRS=18;
+  else if(selSizeVal===8) PAIRS=32;
+  else PAIRS=50;
+  const picked=shuffle([...ALL_ITEMS]).slice(0,PAIRS);
+  const deck=[];
+  picked.forEach((item,i)=>{deck.push({id:i,en:item.en,zh:item.zh,emoji:item.e,matched:false,owner:-1});deck.push({id:i,en:item.en,zh:item.zh,emoji:item.e,matched:false,owner:-1});});
+  cards=shuffle(deck);open=[];lock=false;tries=0;left=PAIRS;combo=0;scores=[0,0];pairs_by=[0,0];turn=0;
+  document.getElementById('win-area').innerHTML='';document.getElementById('confetti').innerHTML='';
+  setMsg('翻開任意一張牌！','');renderTopbar();renderGrid();
+}
+
+function renderTopbar(){
+  const twb=document.getElementById('turn-bar-wrap'),tb=document.getElementById('topbar');
+  if(selModeVal==='multi'){
+    twb.innerHTML=`<div class="turn-bar"><div class="turn-chip p1${turn===0?' active':''}"><div class="chip-score">${scores[0]}</div><div class="chip-label">P1${turn===0?' ▶':''}</div></div><div class="turn-chip p2${turn===1?' active':''}"><div class="chip-score">${scores[1]}</div><div class="chip-label">P2${turn===1?' ▶':''}</div></div></div>`;
+    tb.innerHTML=`<div class="stat"><div class="stat-label">剩餘</div><div class="stat-val">${left}</div></div><div class="stat"><div class="stat-label">翻牌</div><div class="stat-val">${tries}</div></div>`;
+  }else{
+    twb.innerHTML='';
+    tb.innerHTML=`<div class="stat"><div class="stat-label">剩餘</div><div class="stat-val">${left}</div></div><div class="stat"><div class="stat-label">翻牌</div><div class="stat-val">${tries}</div></div><div class="combo-badge">x${combo} 連擊</div>`;
+  }
+}
+
+function renderGrid(){
+  const grid=document.getElementById('grid');
+  const cellSize=calcCellSize(COLS);
+  const iconSz=Math.max(Math.floor(cellSize*0.35),12);
+  const txtSz=Math.max(Math.floor(cellSize*0.12),7);
+  const qSz=Math.max(Math.floor(cellSize*0.22),11);
+  grid.style.gridTemplateColumns=`repeat(${COLS},1fr)`;
+  grid.style.gap='4px';
+  grid.innerHTML='';
+  cards.forEach((c,i)=>{
+    const cell=document.createElement('div');
+    cell.className='cell'+(c.matched?' flip '+(selModeVal==='single'?'done-solo':c.owner===0?'done-p1':'done-p2'):'');
+    cell.style.height=cellSize+'px';
+    cell.dataset.i=i;
+    cell.innerHTML=`<div class="inner"><div class="face back"><div class="back-q" style="font-size:${qSz}px">?</div></div><div class="face front"><span class="c-icon" style="font-size:${iconSz}px">${c.emoji}</span><span class="c-en" style="font-size:${txtSz}px">${c.en.toUpperCase()}</span><span class="c-zh" style="font-size:${txtSz}px">${c.zh}</span></div></div>`;
+    cell.addEventListener('click',()=>onTap(i));
+    grid.appendChild(cell);
+  });
+}
+
+function getEl(i){return document.querySelector('[data-i="'+i+'"]');}
+function onTap(i){
+  unlockAudio();
+  if(lock)return;const c=cards[i];if(c.matched||open.includes(i))return;
+  const el=getEl(i);if(selModeVal==='multi')el.classList.add(turn===0?'flip-p1':'flip-p2');
+  el.classList.add('flip');speak(c.en,c.zh);
+  setMsg('🔊 '+c.en+' · '+c.zh,selModeVal==='multi'?(turn===0?'p1c':'p2c'):'');open.push(i);
+  if(open.length===2){
+    tries++;renderTopbar();
+    const[ai,bi]=open,a=cards[ai],b=cards[bi],ea=getEl(ai),eb=getEl(bi);
+    if(a.id===b.id){
+      combo++;const pts=combo;
+      setTimeout(()=>{
+        a.matched=true;b.matched=true;a.owner=turn;b.owner=turn;
+        const dc=selModeVal==='single'?'done-solo':(turn===0?'done-p1':'done-p2');
+        ea.classList.remove('flip-p1','flip-p2');eb.classList.remove('flip-p1','flip-p2');ea.classList.add(dc);eb.classList.add(dc);
+        if(selModeVal==='multi'){scores[turn]+=pts;pairs_by[turn]++;}else if(combo>1)spawnConfetti();
+        setMsg(selModeVal==='multi'?(turn===0?'P1':'P2')+' 配對！'+a.en+(combo>1?' +'+pts:''):'配對！'+a.en+(combo>1?' x'+combo+'！':''),selModeVal==='multi'?(turn===0?'p1c':'p2c'):'ok');
+        open=[];left--;renderTopbar();if(left<=0)setTimeout(()=>showResult(),500);
+      },280);
+    }else{
+      combo=0;
+      setTimeout(()=>{
+        ea.classList.add('wrong');eb.classList.add('wrong');setMsg(a.en+' ≠ '+b.en,'err');lock=true;
+        setTimeout(()=>{ea.classList.remove('flip','wrong','flip-p1','flip-p2');eb.classList.remove('flip','wrong','flip-p1','flip-p2');open=[];lock=false;if(selModeVal==='multi')turn=1-turn;renderTopbar();setMsg(selModeVal==='multi'?(turn===0?'P1 ▶':'P2 ▶'):'繼續！','');},750);
+      },280);
+    }
+  }
+}
+function spawnConfetti(){const wrap=document.getElementById('confetti');wrap.innerHTML='';const cols=['#60A5FA','#F472B6','#34D399','#FBBF24','#F87171','#A78BFA'];for(let i=0;i<18;i++){const d=document.createElement('div');d.className='dot';d.style.cssText=`left:${5+Math.random()*90}%;background:${cols[i%cols.length]};animation-delay:${(Math.random()*.3).toFixed(2)}s;animation-duration:${(.9+Math.random()*.5).toFixed(2)}s;`;wrap.appendChild(d);}setTimeout(()=>wrap.innerHTML='',1600);}
+function showResult(){
+  spawnConfetti();
+  if(selModeVal==='single'){
+    const t3=PAIRS<=18?22:PAIRS<=32?40:65,t2=PAIRS<=18?30:PAIRS<=32?55:85,stars=tries<=t3?3:tries<=t2?2:1,acc=Math.round(PAIRS/tries*100);
+    document.getElementById('win-area').innerHTML=`<div class="win-overlay"><div class="stars">${'★'.repeat(stars)+'☆'.repeat(3-stars)}</div><div class="win-title">全部消除！</div><div class="win-sub">翻了 ${tries} 次・正確率 ${acc}%</div><div class="win-btn-row"><button onclick="goMenu()">← 選單</button><button onclick="restartGame()">再玩一局</button></div></div>`;
+  }else{
+    const tie=scores[0]===scores[1],wtext=tie?'平手！':'🏆 '+(scores[0]>scores[1]?'P1':'P2')+' 獲勝！',p1w=scores[0]>=scores[1],p2w=scores[1]>=scores[0];
+    document.getElementById('win-area').innerHTML=`<div class="win-overlay"><div class="win-title">${wtext}</div><div class="score-cards"><div class="sc-card p1c${p1w?' winner':''}"><div class="sc-name p1c">P1</div><div class="sc-pts p1c">${scores[0]}</div><div class="sc-detail">${pairs_by[0]} 對</div></div><div class="sc-card p2c${p2w?' winner':''}"><div class="sc-name p2c">P2</div><div class="sc-pts p2c">${scores[1]}</div><div class="sc-detail">${pairs_by[1]} 對</div></div></div><div class="win-sub">總翻牌 ${tries} 次</div><div class="win-btn-row"><button onclick="goMenu()">← 選單</button><button onclick="restartGame()">再玩一局</button></div></div>`;
+  }
+}
+function setMsg(t,cls){const el=document.getElementById('msg');el.textContent=t;el.className='msg-bar '+cls;}
+</script>
+</body>
+</html>

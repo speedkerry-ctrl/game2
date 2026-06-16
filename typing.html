@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中文打字練習</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans TC',sans-serif;background:#f5f5f0;min-height:100vh;}
+nav{background:#fff;border-bottom:1px solid #eee;padding:0 1.5rem;display:flex;align-items:center;height:52px;gap:1rem;position:sticky;top:0;z-index:50;}
+.nav-logo{font-size:16px;font-weight:600;color:#1a1a1a;text-decoration:none;}
+.nav-links{display:flex;gap:6px;margin-left:auto;}
+.nav-link{font-size:13px;padding:6px 14px;border-radius:8px;color:#666;text-decoration:none;transition:all .15s;}
+.nav-link:hover{background:#f0f0ee;color:#1a1a1a;}
+.nav-link.active{background:#1a1a1a;color:#fff;}
+.page-body{display:flex;justify-content:center;padding:1rem;}
+#game-root{width:100%;max-width:660px;display:flex;flex-direction:column;align-items:center;padding-top:1rem;}
+.screen{width:100%;display:none;flex-direction:column;align-items:center;}
+.screen.active{display:flex;}
+.title{font-size:26px;font-weight:600;color:#1a1a1a;margin-bottom:.25rem;text-align:center;}
+.subtitle{font-size:13px;color:#666;margin-bottom:1.75rem;text-align:center;}
+.level-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;margin-bottom:1.25rem;}
+.level-card{background:#fff;border:1px solid #e0ddd5;border-radius:14px;padding:1.1rem .5rem;text-align:center;cursor:pointer;transition:all .15s;}
+.level-card:hover{border-color:#aaa;background:#fafafa;transform:translateY(-1px);}
+.level-card.custom-card{border:1.5px dashed #1D9E75;}
+.level-card.custom-card:hover{background:#f0fdf7;}
+.lv-num{font-size:20px;font-weight:600;color:#1a1a1a;}
+.lv-label{font-size:11px;color:#666;margin-top:3px;}
+.lv-stars{font-size:13px;margin-top:5px;}
+.game-header{width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;}
+.game-info{font-size:13px;color:#666;}
+.progress-bar{width:100%;height:6px;background:#e8e5df;border-radius:3px;margin-bottom:1.25rem;overflow:hidden;}
+.progress-fill{height:100%;border-radius:3px;background:#1D9E75;transition:width .35s;}
+.card-area{width:100%;min-height:210px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;border:1px solid #e0ddd5;border-radius:16px;padding:1.75rem;margin-bottom:1.25rem;position:relative;overflow:hidden;transition:border-color .2s,background .2s;}
+.card-area.correct{border-color:#1D9E75;background:#f0fdf7;}
+.card-area.wrong{border-color:#E24B4A;background:#fff5f5;}
+.word-emoji{font-size:68px;line-height:1;margin-bottom:.8rem;}
+.word-chinese{font-size:34px;font-weight:600;color:#1a1a1a;letter-spacing:4px;}
+.feedback-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;border-radius:16px;opacity:0;transition:opacity .2s;pointer-events:none;background:rgba(255,255,255,.88);}
+.feedback-overlay.show{opacity:1;}
+.feedback-correct{color:#0F6E56;}
+.feedback-wrong{color:#A32D2D;}
+.input-row{width:100%;display:flex;gap:8px;}
+.input-row input{flex:1;font-size:17px;padding:10px 15px;border:1.5px solid #ccc;border-radius:10px;background:#fff;color:#1a1a1a;outline:none;transition:border-color .15s;}
+.input-row input:focus{border-color:#1D9E75;box-shadow:0 0 0 3px rgba(29,158,117,.15);}
+.input-row input.shake{animation:shake .3s;}
+.btn{padding:10px 16px;border-radius:10px;border:1px solid #ccc;background:#fff;color:#333;font-size:13px;cursor:pointer;transition:all .15s;}
+.btn:hover{background:#f5f5f0;border-color:#aaa;}
+.btn-primary{background:#1D9E75;color:#fff;border-color:#1D9E75;}
+.btn-primary:hover{background:#0F6E56;border-color:#0F6E56;}
+.btn-danger{background:#fff;color:#A32D2D;border-color:#E24B4A;}
+.btn-danger:hover{background:#fff5f5;}
+.btn-sm{padding:7px 12px;font-size:12px;}
+.lives{display:flex;gap:4px;}
+.heart{font-size:17px;}
+.hint-bar{margin-top:8px;font-size:12px;color:#888;text-align:center;}
+.home-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#666;font-size:12px;cursor:pointer;transition:all .15s;}
+.home-btn:hover{background:#f5f5f0;color:#333;}
+/* result */
+.result-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;margin:1.25rem 0;}
+.stat-card{background:#f5f5f0;border-radius:10px;padding:.875rem;text-align:center;}
+.stat-val{font-size:22px;font-weight:600;color:#1a1a1a;}
+.stat-lbl{font-size:11px;color:#666;margin-top:3px;}
+.result-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+/* editor */
+.notice{font-size:12px;color:#666;background:#f5f5f0;border-radius:10px;padding:.5rem .75rem;margin-bottom:.875rem;width:100%;line-height:1.6;}
+.entry-list{display:flex;flex-direction:column;gap:8px;width:100%;margin-bottom:.875rem;max-height:300px;overflow-y:auto;}
+.entry-row{display:flex;gap:8px;align-items:center;}
+.entry-row input{flex:1;font-size:14px;padding:7px 11px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#1a1a1a;outline:none;}
+.entry-row input:focus{border-color:#1D9E75;}
+.entry-row .del-btn{padding:6px 9px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#888;font-size:12px;cursor:pointer;flex-shrink:0;}
+.entry-row .del-btn:hover{background:#fff5f5;color:#A32D2D;border-color:#E24B4A;}
+.add-row{display:flex;gap:8px;width:100%;margin-bottom:.875rem;}
+.editor-actions{display:flex;gap:8px;width:100%;justify-content:space-between;align-items:center;flex-wrap:wrap;}
+.count-badge{font-size:12px;color:#666;}
+hr.divider{width:100%;border:none;border-top:1px solid #e8e5df;margin:.75rem 0;}
+/* modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99;align-items:center;justify-content:center;}
+.modal-box{background:#fff;border-radius:16px;padding:1.75rem 1.5rem;max-width:300px;width:90%;text-align:center;}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}60%{transform:translateX(7px)}}
+@keyframes popIn{0%{transform:scale(.7);opacity:0}80%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.pop{animation:popIn .25s forwards;}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html">🎮 翻翻樂</a>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">首頁</a>
+    <a class="nav-link" href="animal.html">英文遊戲</a>
+    <a class="nav-link" href="math.html">數學遊戲</a>
+    <a class="nav-link active" href="typing.html">打字練習</a>
+  </div>
+</nav>
+<div class="page-body">
+<div id="game-root">
+
+<!-- MENU -->
+<div class="screen active" id="menu-screen">
+  <div style="margin:1rem 0 .5rem;">
+    <div class="title">🇹🇼 中文打字練習</div>
+    <div class="subtitle">看圖打字，從小學二年級到成語挑戰！</div>
+  </div>
+  <div class="level-grid">
+    <div class="level-card" onclick="startGame(1)">
+      <div class="lv-num">1</div><div class="lv-label">小學二年級</div><div class="lv-stars">⭐</div>
+    </div>
+    <div class="level-card" onclick="startGame(2)">
+      <div class="lv-num">2</div><div class="lv-label">小學三年級</div><div class="lv-stars">⭐⭐</div>
+    </div>
+    <div class="level-card" onclick="startGame(3)">
+      <div class="lv-num">3</div><div class="lv-label">小學四年級</div><div class="lv-stars">⭐⭐⭐</div>
+    </div>
+    <div class="level-card" onclick="startGame(4)">
+      <div class="lv-num">4</div><div class="lv-label">小學五年級</div><div class="lv-stars">⭐⭐⭐⭐</div>
+    </div>
+    <div class="level-card" onclick="startGame(5)">
+      <div class="lv-num">5</div><div class="lv-label">成語挑戰</div><div class="lv-stars">⭐⭐⭐⭐⭐</div>
+    </div>
+    <div class="level-card custom-card" onclick="showCustomEditor()">
+      <div class="lv-num" style="color:#1D9E75;">✏️</div>
+      <div class="lv-label" style="color:#0F6E56;font-weight:600;">自訂關卡</div>
+      <div class="lv-stars" style="color:#1D9E75;">新增 / 編輯</div>
+    </div>
+  </div>
+  <div style="font-size:12px;color:#888;text-align:center;">每關 30 題 · 3 條命 · 輸入中文後按 Enter 確認</div>
+</div>
+
+<!-- EDITOR -->
+<div class="screen" id="editor-screen">
+  <div style="width:100%;display:flex;align-items:center;gap:10px;margin-bottom:1rem;">
+    <button class="home-btn" onclick="showMenu()">← 返回選關</button>
+    <div style="font-size:16px;font-weight:600;color:#1a1a1a;">✏️ 自訂關卡編輯器</div>
+  </div>
+  <div class="notice">每一題請填入「圖示（emoji）」和「答案文字」，玩家需打出正確的答案文字才能過關。<br>可不填 emoji，系統會使用預設圖示 ❓。</div>
+  <div class="entry-list" id="entry-list"></div>
+  <div class="add-row">
+    <input type="text" id="new-emoji" placeholder="圖示 emoji（如 🐱）" style="max-width:155px;" maxlength="8" />
+    <input type="text" id="new-word" placeholder="答案文字（如 貓咪）" />
+    <button class="btn btn-primary btn-sm" onclick="addEntry()">＋ 新增</button>
+  </div>
+  <hr class="divider">
+  <div class="editor-actions">
+    <span class="count-badge" id="entry-count">目前 0 題</span>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-danger btn-sm" onclick="clearAllEntries()">全部清除</button>
+      <button class="btn btn-primary" onclick="startCustomGame()" id="start-custom-btn" disabled>開始遊戲 ▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div class="screen" id="game-screen">
+  <div class="game-header">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="home-btn" onclick="confirmHome()">🏠 回首頁</button>
+      <div class="game-info" id="level-label">難度 1 · 第 1/30 題</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div class="lives" id="lives-display"></div>
+      <div style="font-size:14px;font-weight:600;color:#1a1a1a;">🏆 <span id="score-display">0</span></div>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  <div class="card-area" id="card-area">
+    <div class="word-emoji" id="word-emoji">🐱</div>
+    <div class="word-chinese" id="word-chinese">貓咪</div>
+    <div class="feedback-overlay" id="feedback-overlay"></div>
+  </div>
+  <div class="input-row">
+    <input type="text" id="answer-input" placeholder="在此輸入答案，按 Enter 確認…" autocomplete="off" />
+    <button class="btn" onclick="skipWord()">略過</button>
+  </div>
+  <div class="hint-bar">提示：共 <span id="hint-chars">0</span> 個字</div>
+</div>
+
+<!-- RESULT -->
+<div class="screen" id="result-screen" style="text-align:center;">
+  <div id="result-emoji" style="font-size:54px;margin-bottom:.5rem;">🎉</div>
+  <div id="result-title" style="font-size:22px;font-weight:600;margin-bottom:.25rem;"></div>
+  <div id="result-msg" style="font-size:13px;color:#666;margin-bottom:.25rem;"></div>
+  <div class="result-stats">
+    <div class="stat-card"><div class="stat-val" id="r-score">0</div><div class="stat-lbl">得分</div></div>
+    <div class="stat-card"><div class="stat-val" id="r-correct">0</div><div class="stat-lbl">答對</div></div>
+    <div class="stat-card"><div class="stat-val" id="r-acc">0%</div><div class="stat-lbl">正確率</div></div>
+  </div>
+  <div class="result-btns">
+    <button class="btn" onclick="showMenu()">🏠 回首頁</button>
+    <button class="btn" onclick="restartGame()">↩ 再玩一次</button>
+    <button class="btn btn-primary" id="next-level-btn" onclick="nextLevel()">下一關 ▶</button>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal-box">
+    <div style="font-size:28px;margin-bottom:.75rem;">🏠</div>
+    <div style="font-size:16px;font-weight:600;margin-bottom:.5rem;">確定要回首頁？</div>
+    <div style="font-size:13px;color:#666;margin-bottom:1.25rem;">目前進度將不會保存。</div>
+    <div style="display:flex;gap:8px;justify-content:center;">
+      <button class="btn" onclick="closeModal()">繼續遊戲</button>
+      <button class="btn btn-danger" onclick="goHome()">回首頁</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+const WORDS={
+  1:[{e:'🌳',w:'大樹'},{e:'🌸',w:'花朵'},{e:'⛅',w:'白雲'},{e:'☀️',w:'太陽'},{e:'🌧️',w:'下雨'},{e:'🐦',w:'小鳥'},{e:'🐟',w:'魚兒'},{e:'🐝',w:'蜜蜂'},{e:'🍎',w:'蘋果'},{e:'🍌',w:'香蕉'},{e:'🥕',w:'紅蘿蔔'},{e:'🌽',w:'玉米'},{e:'🏠',w:'房子'},{e:'📚',w:'書本'},{e:'✏️',w:'鉛筆'},{e:'🎒',w:'書包'},{e:'🚗',w:'汽車'},{e:'🚲',w:'腳踏車'},{e:'⭐',w:'星星'},{e:'🌙',w:'月亮'},{e:'🐱',w:'貓咪'},{e:'🐶',w:'小狗'},{e:'🐰',w:'兔子'},{e:'🐻',w:'熊熊'},{e:'🐤',w:'小雞'},{e:'🍦',w:'冰淇淋'},{e:'🎂',w:'蛋糕'},{e:'🍩',w:'甜甜圈'},{e:'👶',w:'小孩'},{e:'👵',w:'奶奶'}],
+  2:[{e:'🌈',w:'彩虹'},{e:'🔭',w:'望遠鏡'},{e:'🎭',w:'戲劇'},{e:'🚀',w:'火箭'},{e:'🌊',w:'海浪'},{e:'🏔️',w:'高山'},{e:'🏝️',w:'島嶼'},{e:'🎸',w:'吉他'},{e:'🎹',w:'鋼琴'},{e:'🎨',w:'畫筆'},{e:'🔬',w:'顯微鏡'},{e:'💡',w:'燈泡'},{e:'⚡',w:'閃電'},{e:'🌺',w:'花朵'},{e:'🍀',w:'幸運草'},{e:'🦋',w:'蝴蝶'},{e:'🐠',w:'熱帶魚'},{e:'🐸',w:'青蛙'},{e:'🦊',w:'狐狸'},{e:'🦅',w:'老鷹'},{e:'🍇',w:'葡萄'},{e:'🍓',w:'草莓'},{e:'🍑',w:'水蜜桃'},{e:'🥦',w:'花椰菜'},{e:'🌍',w:'地球'},{e:'🏋️',w:'舉重'},{e:'🎯',w:'射箭'},{e:'🎻',w:'小提琴'},{e:'🌻',w:'向日葵'},{e:'🦜',w:'鸚鵡'}],
+  3:[{e:'🔭',w:'天文望遠鏡'},{e:'🧬',w:'生物科技'},{e:'💻',w:'電腦程式'},{e:'🏛️',w:'古羅馬建築'},{e:'🌋',w:'活火山'},{e:'🦠',w:'細菌病毒'},{e:'🌡️',w:'溫度計'},{e:'⚗️',w:'化學實驗'},{e:'🧲',w:'電磁磁鐵'},{e:'🔋',w:'蓄電池'},{e:'🧪',w:'試管實驗'},{e:'🌐',w:'網際網路'},{e:'🛸',w:'飛碟太空'},{e:'🌌',w:'銀河星系'},{e:'⛄',w:'雪人融化'},{e:'🏄',w:'衝浪運動'},{e:'🤿',w:'潛水運動'},{e:'🧗',w:'攀岩運動'},{e:'🎻',w:'古典音樂'},{e:'🎭',w:'舞台表演'},{e:'🦁',w:'非洲獅子'},{e:'🐘',w:'非洲象'},{e:'🦒',w:'長頸鹿'},{e:'🦓',w:'非洲斑馬'},{e:'🐊',w:'灣鱷'},{e:'🌴',w:'熱帶棕櫚'},{e:'🍄',w:'毒蘑菇'},{e:'🌵',w:'仙人掌'},{e:'🌿',w:'熱帶雨林'},{e:'🏔️',w:'喜馬拉雅'}],
+  4:[{e:'⚖️',w:'公平正義'},{e:'🏛️',w:'民主制度'},{e:'📜',w:'歷史文獻'},{e:'🗺️',w:'地理環境'},{e:'🔬',w:'科學研究'},{e:'🧠',w:'神經系統'},{e:'💰',w:'經濟發展'},{e:'🌍',w:'環境保護'},{e:'🏗️',w:'都市建設'},{e:'🌾',w:'農業發展'},{e:'🚂',w:'鐵路交通'},{e:'✈️',w:'航空工業'},{e:'🛳️',w:'海洋運輸'},{e:'📡',w:'衛星通訊'},{e:'🔭',w:'宇宙探索'},{e:'🎨',w:'藝術創作'},{e:'📖',w:'文學著作'},{e:'🎵',w:'音樂欣賞'},{e:'🏺',w:'文物古蹟'},{e:'🖼️',w:'美術館'},{e:'🌊',w:'海洋生態'},{e:'🏔️',w:'山岳地形'},{e:'🌡️',w:'氣候變遷'},{e:'🌱',w:'綠色能源'},{e:'♻️',w:'資源回收'},{e:'🤝',w:'國際合作'},{e:'📊',w:'統計數據'},{e:'🗳️',w:'選舉投票'},{e:'⚕️',w:'醫療衛生'},{e:'🎓',w:'高等教育'}],
+  5:[{e:'🐉',w:'龍馬精神'},{e:'🐢',w:'龜兔賽跑'},{e:'🦁',w:'虎虎生威'},{e:'🐯',w:'如虎添翼'},{e:'🦅',w:'鵬程萬里'},{e:'⛵',w:'一帆風順'},{e:'🌊',w:'乘風破浪'},{e:'☀️',w:'旭日東升'},{e:'🌙',w:'月下老人'},{e:'⭐',w:'眾星拱月'},{e:'🌳',w:'落葉歸根'},{e:'🌸',w:'春暖花開'},{e:'❄️',w:'冰清玉潔'},{e:'🔥',w:'火上加油'},{e:'💧',w:'水滴石穿'},{e:'🏔️',w:'山窮水盡'},{e:'🌈',w:'柳暗花明'},{e:'🎯',w:'百發百中'},{e:'⚔️',w:'刀山火海'},{e:'🛡️',w:'固若金湯'},{e:'🧩',w:'七拼八湊'},{e:'🎭',w:'喜怒哀樂'},{e:'💡',w:'茅塞頓開'},{e:'📚',w:'學富五車'},{e:'✍️',w:'妙筆生花'},{e:'🏆',w:'捨我其誰'},{e:'🤝',w:'同舟共濟'},{e:'⏰',w:'分秒必爭'},{e:'🎪',w:'天下太平'},{e:'🌍',w:'海納百川'}]
+};
+
+let customEntries=[];
+let currentLevel=1,currentWords=[],currentIdx=0,score=0,lives=3,correct=0,wrongCount=0;
+let isCustom=false,feedbackTimeout=null;
+
+function showMenu(){showScreen('menu-screen');}
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  closeModal();
+}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+/* EDITOR */
+function showCustomEditor(){showScreen('editor-screen');renderEntries();}
+function renderEntries(){
+  const list=document.getElementById('entry-list');
+  list.innerHTML='';
+  customEntries.forEach((entry,i)=>{
+    const row=document.createElement('div');
+    row.className='entry-row';
+    row.innerHTML=`<input type="text" value="${escHtml(entry.e)}" placeholder="emoji" maxlength="8" style="max-width:90px;" oninput="customEntries[${i}].e=this.value;updateCount()">
+      <input type="text" value="${escHtml(entry.w)}" placeholder="答案文字" oninput="customEntries[${i}].w=this.value;updateCount()">
+      <button class="del-btn" onclick="removeEntry(${i})">✕</button>`;
+    list.appendChild(row);
+  });
+  updateCount();
+}
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function addEntry(){
+  const emoji=document.getElementById('new-emoji').value.trim()||'❓';
+  const word=document.getElementById('new-word').value.trim();
+  if(!word){document.getElementById('new-word').focus();return;}
+  customEntries.push({e:emoji,w:word});
+  document.getElementById('new-emoji').value='';
+  document.getElementById('new-word').value='';
+  renderEntries();
+  const list=document.getElementById('entry-list');
+  list.scrollTop=list.scrollHeight;
+}
+function removeEntry(i){customEntries.splice(i,1);renderEntries();}
+function clearAllEntries(){if(customEntries.length&&confirm('確定要清除所有題目？')){customEntries=[];renderEntries();}}
+function updateCount(){
+  const valid=customEntries.filter(e=>e.w.trim()).length;
+  document.getElementById('entry-count').textContent=`目前 ${valid} 題`;
+  document.getElementById('start-custom-btn').disabled=valid<1;
+}
+function startCustomGame(){
+  const valid=customEntries.filter(e=>e.w.trim());
+  if(!valid.length)return;
+  isCustom=true;currentLevel=0;
+  currentWords=shuffle(valid);
+  currentIdx=0;score=0;lives=3;correct=0;wrongCount=0;
+  showScreen('game-screen');renderLives();loadWord();
+}
+
+/* GAME */
+function startGame(level){
+  isCustom=false;currentLevel=level;
+  currentWords=shuffle(WORDS[level]);
+  currentIdx=0;score=0;lives=3;correct=0;wrongCount=0;
+  showScreen('game-screen');renderLives();loadWord();
+}
+function restartGame(){isCustom?startCustomGame():startGame(currentLevel);}
+function nextLevel(){currentLevel<5?startGame(currentLevel+1):showMenu();}
+function confirmHome(){document.getElementById('confirm-modal').style.display='flex';}
+function closeModal(){document.getElementById('confirm-modal').style.display='none';}
+function goHome(){closeModal();showMenu();}
+function renderLives(){
+  const d=document.getElementById('lives-display');d.innerHTML='';
+  for(let i=0;i<3;i++){const h=document.createElement('span');h.className='heart';h.textContent=i<lives?'❤️':'🖤';d.appendChild(h);}
+}
+function loadWord(){
+  if(currentIdx>=currentWords.length){endGame();return;}
+  const w=currentWords[currentIdx];
+  const ca=document.getElementById('card-area');
+  ca.className='card-area pop';
+  document.getElementById('word-emoji').textContent=w.e;
+  document.getElementById('word-chinese').textContent=w.w;
+  document.getElementById('feedback-overlay').className='feedback-overlay';
+  document.getElementById('feedback-overlay').textContent='';
+  document.getElementById('answer-input').value='';
+  document.getElementById('answer-input').focus();
+  document.getElementById('hint-chars').textContent=w.w.length;
+  const total=currentWords.length;
+  document.getElementById('level-label').textContent=isCustom?`自訂關卡 · 第 ${currentIdx+1}/${total} 題`:`難度 ${currentLevel} · 第 ${currentIdx+1}/${total} 題`;
+  document.getElementById('progress-fill').style.width=(currentIdx/total*100)+'%';
+  document.getElementById('score-display').textContent=score;
+}
+function checkAnswer(){
+  const input=document.getElementById('answer-input');
+  const ans=input.value.trim();
+  const w=currentWords[currentIdx];
+  if(!ans)return;
+  const ca=document.getElementById('card-area');
+  const fb=document.getElementById('feedback-overlay');
+  if(ans===w.w){
+    score+=isCustom?20:[10,15,20,25,40][currentLevel-1];
+    correct++;ca.className='card-area correct';
+    fb.textContent='✅ 答對了！';fb.className='feedback-overlay feedback-correct show';
+    document.getElementById('score-display').textContent=score;
+    if(feedbackTimeout)clearTimeout(feedbackTimeout);
+    feedbackTimeout=setTimeout(()=>{currentIdx++;loadWord();},650);
+  } else {
+    wrongCount++;lives--;renderLives();
+    input.classList.add('shake');ca.className='card-area wrong';
+    fb.textContent=`❌ 答案是：${w.w}`;fb.className='feedback-overlay feedback-wrong show';
+    setTimeout(()=>input.classList.remove('shake'),350);
+    if(feedbackTimeout)clearTimeout(feedbackTimeout);
+    if(lives<=0)feedbackTimeout=setTimeout(()=>endGame(),950);
+    else feedbackTimeout=setTimeout(()=>{currentIdx++;loadWord();},1100);
+  }
+}
+function skipWord(){currentIdx++;loadWord();}
+function endGame(){
+  showScreen('result-screen');
+  const total=correct+wrongCount;
+  const acc=total>0?Math.round(correct/total*100):0;
+  document.getElementById('r-score').textContent=score;
+  document.getElementById('r-correct').textContent=correct+' / '+currentWords.length;
+  document.getElementById('r-acc').textContent=acc+'%';
+  let emoji='🎉',title='完成！',msg='';
+  if(lives<=0){emoji='😅';title='遊戲結束';msg='沒關係，再試一次！';}
+  else if(acc>=90){emoji='🏆';title='太厲害了！';msg='滿分表現，挑戰下一關吧！';}
+  else if(acc>=70){emoji='🎊';title='做得很好！';msg='繼續練習會更棒喔！';}
+  else{emoji='💪';title='加油！';msg='多練習幾次一定進步！';}
+  document.getElementById('result-emoji').textContent=emoji;
+  document.getElementById('result-title').textContent=title;
+  document.getElementById('result-msg').textContent=msg;
+  const nb=document.getElementById('next-level-btn');
+  if(isCustom||currentLevel>=5)nb.style.display='none';
+  else{nb.style.display='';nb.textContent=`第 ${currentLevel+1} 關 ▶`;}
+}
+
+document.getElementById('answer-input').addEventListener('keydown',e=>{if(e.key==='Enter')checkAnswer();});
+document.getElementById('new-word').addEventListener('keydown',e=>{if(e.key==='Enter')addEntry();});
+document.getElementById('confirm-modal').addEventListener('click',e=>{if(e.target===document.getElementById('confirm-modal'))closeModal();});
+</script>
+</body>
+</html>

@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>數學翻翻樂</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f8f8f6;min-height:100vh;min-height:100dvh;}
+
+nav{background:#fff;border-bottom:1px solid #eee;padding:0 1.25rem;display:flex;align-items:center;height:52px;gap:10px;position:sticky;top:0;z-index:50;}
+.nav-logo{font-size:15px;font-weight:700;color:#1a1a1a;text-decoration:none;white-space:nowrap;}
+.nav-links{display:flex;gap:4px;margin-left:auto;}
+.nav-link{font-size:13px;padding:6px 10px;border-radius:7px;color:#666;text-decoration:none;}
+.nav-link.active{background:#1a1a1a;color:#fff;}
+
+/* 外框：手機/平板填滿螢幕 */
+.container{
+  width:100%;max-width:900px;
+  margin:0 auto;
+  padding:1rem 1rem 1.5rem;
+}
+@media(min-width:600px){.container{padding:1.25rem 2rem 2rem;}}
+@media(min-width:900px){.container{padding:1.5rem 2.5rem 2.5rem;}}
+
+.screen{display:none;}.screen.active{display:block;}
+.menu-title{font-size:clamp(18px,4vw,26px);font-weight:700;color:#1a1a1a;margin-bottom:4px;text-align:center;}
+.menu-sub{font-size:clamp(12px,2.5vw,15px);color:#888;text-align:center;margin-bottom:1.25rem;}
+.section-label{font-size:12px;color:#888;margin-bottom:8px;letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:6px;}
+.section-label::after{content:'';flex:1;height:1px;background:#eee;}
+
+.op-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem;}
+@media(max-width:400px){.op-grid{grid-template-columns:repeat(2,1fr);}}
+.op-btn{background:#fff;border:1.5px solid #e5e5e5;border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer;}
+.op-btn.sel{border:2px solid #378ADD;background:#E6F1FB;}
+.op-icon{font-size:clamp(16px,3vw,22px);margin-bottom:3px;}
+.op-name{font-size:clamp(12px,2vw,14px);font-weight:700;color:#1a1a1a;}
+
+.diff-wrap{background:#f0f0ee;border-radius:12px;padding:10px 12px;margin-bottom:1rem;}
+.diff-title{font-size:11px;color:#888;margin-bottom:8px;font-weight:600;}
+.diff-grid{display:grid;gap:6px;}
+.diff-btn{background:#fff;border:1.5px solid #e5e5e5;border-radius:8px;padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:10px;}
+.diff-btn.sel{border:2px solid #1D9E75;background:#E1F5EE;}
+.diff-lv{font-size:11px;font-weight:700;color:#1D9E75;white-space:nowrap;min-width:32px;}
+.diff-name{font-size:13px;font-weight:600;color:#1a1a1a;}
+.diff-eg{font-size:12px;color:#888;margin-left:auto;white-space:nowrap;}
+
+.size-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem;}
+.size-btn{background:#fff;border:1.5px solid #e5e5e5;border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer;}
+.size-btn.sel{border:2px solid #6366F1;background:#EEF2FF;}
+.size-label{font-size:clamp(14px,3vw,18px);font-weight:700;color:#1a1a1a;}
+.size-sub{font-size:11px;color:#888;margin-top:3px;}
+
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1.25rem;}
+.mode-btn{background:#fff;border:1.5px solid #e5e5e5;border-radius:10px;padding:14px;text-align:center;cursor:pointer;}
+.mode-btn.sel{border:2px solid #378ADD;background:#E6F1FB;}
+.mode-icon{font-size:clamp(18px,3vw,22px);margin-bottom:4px;}
+.mode-name{font-size:clamp(12px,2vw,14px);font-weight:700;color:#1a1a1a;}
+.mode-desc{font-size:11px;color:#888;margin-top:2px;}
+.start-btn{width:100%;padding:14px;font-size:clamp(14px,2.5vw,16px);font-weight:700;border-radius:10px;background:#185FA5;color:#fff;border:none;cursor:pointer;}
+
+/* 遊戲畫面 */
+.info-bar{display:flex;gap:6px;margin-bottom:8px;align-items:center;justify-content:center;flex-wrap:wrap;}
+.op-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;}
+.op-badge.add{background:#DCFCE7;color:#166534;}
+.op-badge.sub{background:#FEF3C7;color:#92400E;}
+.op-badge.mul{background:#EDE9FE;color:#4C1D95;}
+.op-badge.mix{background:#FFE4E6;color:#9F1239;}
+.diff-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:#E0F2FE;color:#0369A1;}
+
+.turn-bar{display:flex;gap:8px;margin-bottom:8px;}
+.turn-chip{flex:1;padding:10px;border-radius:10px;text-align:center;font-size:12px;font-weight:700;border:2px solid transparent;transition:all .2s;}
+.turn-chip.p1{background:#EEF3FF;color:#3451B2;border-color:#C7D2FE;}
+.turn-chip.p2{background:#FFF0F6;color:#9D174D;border-color:#FBCFE8;}
+.turn-chip.active.p1{background:#3451B2;color:#fff;border-color:#3451B2;box-shadow:0 0 0 3px #C7D2FE;}
+.turn-chip.active.p2{background:#BE185D;color:#fff;border-color:#BE185D;box-shadow:0 0 0 3px #FBCFE8;}
+.chip-score{font-size:clamp(16px,3vw,22px);font-weight:700;}
+.chip-label{font-size:11px;opacity:.85;margin-top:2px;}
+
+.topbar{display:flex;gap:8px;margin-bottom:8px;}
+.stat{background:#fff;border:1px solid #eee;border-radius:8px;padding:6px 10px;text-align:center;flex:1;}
+.stat-label{font-size:11px;color:#888;}
+.stat-val{font-size:clamp(16px,3vw,20px);font-weight:700;color:#1a1a1a;}
+.combo-badge{background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;color:#633806;display:flex;align-items:center;justify-content:center;white-space:nowrap;}
+
+.msg-bar{text-align:center;font-size:clamp(12px,2.5vw,15px);font-weight:600;min-height:22px;margin-bottom:8px;color:#888;}
+.msg-bar.ok{color:#166534;}.msg-bar.err{color:#991B1B;}
+.msg-bar.p1c{color:#3451B2;}.msg-bar.p2c{color:#9D174D;}
+
+/* 牌格 */
+.grid{display:grid;gap:6px;margin-bottom:10px;}
+.cell{perspective:900px;cursor:pointer;touch-action:manipulation;}
+.inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .32s cubic-bezier(.4,0,.2,1);}
+.cell.flip .inner,.cell.done .inner{transform:rotateY(180deg);}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid transparent;}
+.back{background:#e8e8e4;border-color:#d5d5d0;}
+.back-q{font-weight:700;color:#aaa;}
+.front{transform:rotateY(180deg);gap:3px;border-color:#e5e5e5;}
+/* 算式牌：淡藍底 */
+.front.eq-card{background:#EEF2FF;}
+.front.eq-card .c-main{font-weight:700;color:#1E3A8A;line-height:1.25;text-align:center;padding:0 4px;word-break:break-all;}
+/* 答案牌：白底 */
+.front.ans-card{background:#fff;}
+.front.ans-card .c-main{font-weight:700;color:#1a1a1a;}
+
+.flip-p1 .back{background:#DBEAFE;border-color:#93C5FD;}
+.flip-p2 .back{background:#FCE7F3;border-color:#F9A8D4;}
+.done-p1 .front{background:#DBEAFE!important;border-color:#60A5FA!important;}.done-p1 .front .c-main{color:#1E40AF!important;}
+.done-p2 .front{background:#FCE7F3!important;border-color:#F472B6!important;}.done-p2 .front .c-main{color:#9D174D!important;}
+.done-solo .front{background:#DCFCE7!important;border-color:#86EFAC!important;}.done-solo .front .c-main{color:#166534!important;}
+@keyframes wrongShake{0%,100%{transform:rotateY(180deg) translateX(0);}25%{transform:rotateY(180deg) translateX(-5px);}75%{transform:rotateY(180deg) translateX(5px);}}
+.cell.wrong .inner{animation:wrongShake .3s ease;}
+.cell.wrong .front{background:#FEE2E2!important;border-color:#FCA5A5!important;}
+@keyframes popDone{0%{transform:rotateY(180deg) scale(.85);}60%{transform:rotateY(180deg) scale(1.07);}100%{transform:rotateY(180deg) scale(1);}}
+.done-p1 .inner,.done-p2 .inner,.done-solo .inner{animation:popDone .28s ease forwards;}
+
+.btn-row{display:flex;gap:8px;margin-top:8px;}
+.btn-row button{flex:1;padding:10px;font-size:13px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer;font-weight:500;}
+
+.win-overlay{background:#fff;border:1px solid #eee;border-radius:16px;padding:1.5rem;margin-bottom:12px;}
+.win-title{font-size:clamp(18px,4vw,24px);font-weight:700;color:#1a1a1a;margin-bottom:6px;text-align:center;}
+.win-sub{font-size:14px;color:#888;text-align:center;margin-bottom:12px;}
+.stars{font-size:clamp(24px,5vw,32px);letter-spacing:4px;margin-bottom:8px;text-align:center;}
+.score-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px;}
+.sc-card{border-radius:12px;padding:16px;text-align:center;}
+.sc-card.p1c{background:#DBEAFE;border:2px solid #93C5FD;}.sc-card.p2c{background:#FCE7F3;border:2px solid #F9A8D4;}
+.sc-card.winner{box-shadow:0 0 0 3px #22C55E;}
+.sc-name{font-size:13px;font-weight:700;margin-bottom:4px;}
+.sc-name.p1c{color:#1E40AF;}.sc-name.p2c{color:#9D174D;}
+.sc-pts{font-size:clamp(24px,5vw,32px);font-weight:700;}
+.sc-pts.p1c{color:#1D4ED8;}.sc-pts.p2c{color:#BE185D;}
+.sc-detail{font-size:12px;color:#888;margin-top:4px;}
+.win-btn-row{display:flex;gap:8px;margin-top:12px;}
+.win-btn-row button{flex:1;padding:10px;font-size:13px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer;font-weight:500;}
+
+.confetti-wrap{position:relative;height:0;overflow:visible;pointer-events:none;}
+.dot{position:absolute;width:8px;height:8px;border-radius:50%;animation:fall 1.3s ease forwards;}
+@keyframes fall{0%{transform:translateY(0) rotate(0);opacity:1;}100%{transform:translateY(180px) rotate(720deg);opacity:0;}}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html">🎮 翻翻樂</a>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">首頁</a>
+    <a class="nav-link" href="animal.html">英文</a>
+    <a class="nav-link active" href="math.html">數學</a>
+    <a class="nav-link" href="typing.html">打字</a>
+  </div>
+</nav>
+<div class="container">
+
+<div class="screen active" id="screen-menu">
+  <div class="menu-title">數學翻翻樂 🔢</div>
+  <div class="menu-sub">翻開算式配對答案，消除全部！</div>
+
+  <div class="section-label">選擇題型</div>
+  <div class="op-grid">
+    <div class="op-btn sel" data-op="add" onclick="selOp(this)"><div class="op-icon">➕</div><div class="op-name">加法</div></div>
+    <div class="op-btn" data-op="sub" onclick="selOp(this)"><div class="op-icon">➖</div><div class="op-name">減法</div></div>
+    <div class="op-btn" data-op="mul" onclick="selOp(this)"><div class="op-icon">✖️</div><div class="op-name">乘法</div></div>
+    <div class="op-btn" data-op="mix" onclick="selOp(this)"><div class="op-icon">🔀</div><div class="op-name">混合</div></div>
+  </div>
+
+  <div class="diff-wrap">
+    <div class="diff-title">選擇難度</div>
+    <div class="diff-grid" id="diff-grid"></div>
+  </div>
+
+  <div class="section-label">格子大小</div>
+  <div class="size-grid">
+    <div class="size-btn sel" data-size="4" onclick="selSize(this)"><div class="size-label">4×4</div><div class="size-sub">8對・入門</div></div>
+    <div class="size-btn" data-size="6" onclick="selSize(this)"><div class="size-label">6×6</div><div class="size-sub">18對・進階</div></div>
+    <div class="size-btn" data-size="8" onclick="selSize(this)"><div class="size-label">8×8</div><div class="size-sub">32對・挑戰</div></div>
+  </div>
+
+  <div class="section-label">遊戲模式</div>
+  <div class="mode-grid">
+    <div class="mode-btn sel" data-mode="single" onclick="selMode(this)"><div class="mode-icon">👤</div><div class="mode-name">單人挑戰</div><div class="mode-desc">連擊獎勵 + 星星</div></div>
+    <div class="mode-btn" data-mode="multi" onclick="selMode(this)"><div class="mode-icon">👥</div><div class="mode-name">雙人對戰</div><div class="mode-desc">輪流翻，比分數</div></div>
+  </div>
+  <button class="start-btn" onclick="startGame()">開始遊戲</button>
+</div>
+
+<div class="screen" id="screen-game">
+  <div class="info-bar" id="info-bar"></div>
+  <div id="turn-bar-wrap"></div>
+  <div class="topbar" id="topbar"></div>
+  <div class="msg-bar" id="msg">翻開算式牌或答案牌！</div>
+  <div class="confetti-wrap" id="confetti"></div>
+  <div class="grid" id="grid"></div>
+  <div id="win-area"></div>
+  <div class="btn-row">
+    <button onclick="goMenu()">← 選單</button>
+    <button onclick="restartGame()">重新開始</button>
+    <button onclick="location.href='animal.html'">英文 →</button>
+  </div>
+</div>
+</div>
+
+<script>
+// ── 跨平台音效（iOS + Android + 桌機）────────────────────
+let audioUnlocked = false;
+let voiceZH = null;
+
+// 等語音清單載入後挑選中文聲音
+function loadVoice(){
+  const voices = speechSynthesis.getVoices();
+  // 優先找 zh-TW，其次 zh
+  voiceZH = voices.find(v=>v.lang==='zh-TW')
+           || voices.find(v=>v.lang.startsWith('zh'))
+           || null;
+}
+if(window.speechSynthesis){
+  loadVoice();
+  // Android Chrome 語音清單是非同步載入
+  speechSynthesis.addEventListener('voiceschanged', loadVoice);
+}
+
+// 第一次使用者互動時解鎖音效（iOS & Android 都需要）
+function unlockAudio(){
+  if(audioUnlocked || !window.speechSynthesis) return;
+  const u = new SpeechSynthesisUtterance('');
+  u.volume = 0; u.lang = 'zh-TW';
+  speechSynthesis.speak(u);
+  audioUnlocked = true;
+  // 順便再抓一次 voice
+  loadVoice();
+}
+document.addEventListener('touchstart', unlockAudio, {once:true});
+document.addEventListener('mousedown',  unlockAudio, {once:true});
+
+// Android 長句會中途停止的 workaround：paused 時自動 resume
+let resumeTimer = null;
+function keepAlive(){
+  resumeTimer = setInterval(()=>{
+    if(window.speechSynthesis && speechSynthesis.paused){
+      speechSynthesis.resume();
+    }
+  }, 200);
+}
+function stopKeepAlive(){ clearInterval(resumeTimer); }
+
+function speak(text){
+  if(!window.speechSynthesis) return;
+  stopKeepAlive();
+  speechSynthesis.cancel();
+  // iOS 需要 cancel 後稍等；Android 不介意
+  setTimeout(()=>{
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang    = 'zh-TW';
+    u.rate    = 0.95;
+    u.pitch   = 1.05;
+    u.volume  = 1;
+    if(voiceZH) u.voice = voiceZH;
+    u.onstart = ()=>keepAlive();
+    u.onend   = ()=>stopKeepAlive();
+    u.onerror = ()=>stopKeepAlive();
+    speechSynthesis.speak(u);
+  }, 60);
+}
+function speakEq(eq){
+  speak(eq.replace(/\+/g,'加').replace(/−/g,'減').replace(/×/g,'乘以').replace(/=/g,'等於'));
+}
+
+// ── 難度定義 ─────────────────────────────────────────────
+const DIFFICULTIES = {
+  add:[
+    {lv:'Lv.1',name:'個位＋個位',eg:'3+5',   gen:()=>{const a=rn(1,9),b=rn(1,9);return{a,b,sym:'+',ans:a+b};}},
+    {lv:'Lv.2',name:'個位＋十位',eg:'6+23',  gen:()=>{const a=rn(1,9),b=rn(10,50);return{a,b,sym:'+',ans:a+b};}},
+    {lv:'Lv.3',name:'十位＋十位',eg:'24+35', gen:()=>{const a=rn(10,50),b=rn(10,50);return{a,b,sym:'+',ans:a+b};}},
+    {lv:'Lv.4',name:'十位＋百位',eg:'45+123',gen:()=>{const a=rn(10,99),b=rn(100,500);return{a,b,sym:'+',ans:a+b};}},
+    {lv:'Lv.5',name:'百位＋百位',eg:'123+456',gen:()=>{const a=rn(100,500),b=rn(100,500);return{a,b,sym:'+',ans:a+b};}},
+  ],
+  sub:[
+    {lv:'Lv.1',name:'個位－個位',eg:'9−4',    gen:()=>{const b=rn(1,8),a=rn(b+1,9);return{a,b,sym:'−',ans:a-b};}},
+    {lv:'Lv.2',name:'十位－個位',eg:'25−6',   gen:()=>{const b=rn(1,9),a=rn(11,50);return{a,b,sym:'−',ans:a-b};}},
+    {lv:'Lv.3',name:'十位－十位',eg:'56−23',  gen:()=>{const b=rn(10,40),a=rn(b+2,99);return{a,b,sym:'−',ans:a-b};}},
+    {lv:'Lv.4',name:'百位－十位',eg:'132−45', gen:()=>{const b=rn(10,99),a=rn(b+10,300);return{a,b,sym:'−',ans:a-b};}},
+    {lv:'Lv.5',name:'百位－百位',eg:'500−123',gen:()=>{const b=rn(100,400),a=rn(b+10,999);return{a,b,sym:'−',ans:a-b};}},
+  ],
+  mul:[
+    {lv:'Lv.1',name:'2、3 的乘法',eg:'2×4',  gen:()=>{const a=pick([2,3]),b=rn(1,9);return{a,b,sym:'×',ans:a*b};}},
+    {lv:'Lv.2',name:'4、5 的乘法',eg:'4×7',  gen:()=>{const a=pick([4,5]),b=rn(1,9);return{a,b,sym:'×',ans:a*b};}},
+    {lv:'Lv.3',name:'6、7 的乘法',eg:'6×8',  gen:()=>{const a=pick([6,7]),b=rn(1,9);return{a,b,sym:'×',ans:a*b};}},
+    {lv:'Lv.4',name:'8、9 的乘法',eg:'8×7',  gen:()=>{const a=pick([8,9]),b=rn(1,9);return{a,b,sym:'×',ans:a*b};}},
+    {lv:'Lv.5',name:'完整九九表', eg:'7×8',  gen:()=>{const a=rn(2,9),b=rn(2,9);return{a,b,sym:'×',ans:a*b};}},
+  ],
+  mix:[
+    {lv:'Lv.1',name:'個位混合加減',eg:'3+5 / 8−3',    gen:()=>mixGen('easy')},
+    {lv:'Lv.2',name:'十位混合加減',eg:'24+13 / 35−12', gen:()=>mixGen('mid')},
+    {lv:'Lv.3',name:'含乘法混合', eg:'4×6 / 18+25',   gen:()=>mixGen('hard')},
+  ],
+};
+
+function rn(a,b){return a+Math.floor(Math.random()*(b-a+1));}
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+function mixGen(lv){
+  const ops={
+    easy:[()=>{const a=rn(1,9),b=rn(1,9);return{a,b,sym:'+',ans:a+b};},
+          ()=>{const b=rn(1,8),a=rn(b+1,9);return{a,b,sym:'−',ans:a-b};}],
+    mid: [()=>{const a=rn(10,50),b=rn(10,50);return{a,b,sym:'+',ans:a+b};},
+          ()=>{const b=rn(10,40),a=rn(b+2,99);return{a,b,sym:'−',ans:a-b};}],
+    hard:[()=>{const a=rn(10,50),b=rn(10,50);return{a,b,sym:'+',ans:a+b};},
+          ()=>{const b=rn(1,9),a=rn(b+1,30);return{a,b,sym:'−',ans:a-b};},
+          ()=>{const a=rn(2,9),b=rn(2,9);return{a,b,sym:'×',ans:a*b};}],
+  };
+  return pick(ops[lv])();
+}
+
+let selModeVal='single',selSizeVal=4,selOpVal='add',selDiffIdx=0;
+let cards=[],open=[],lock=false,tries=0,left=0,combo=0;
+let scores=[0,0],pairs_by=[0,0],turn=0;
+let PAIRS=8,COLS=4;
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=0|Math.random()*(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function selOp(el){
+  document.querySelectorAll('.op-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel'); selOpVal=el.dataset.op; selDiffIdx=0; renderDiffGrid();
+}
+function selSize(el){document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');selSizeVal=parseInt(el.dataset.size);}
+function selMode(el){document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');selModeVal=el.dataset.mode;}
+function goMenu(){speechSynthesis.cancel();show('screen-menu');}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function startGame(){show('screen-game');restartGame();}
+
+function renderDiffGrid(){
+  const diffs=DIFFICULTIES[selOpVal];
+  const g=document.getElementById('diff-grid');
+  // 動態 columns：手機2欄，≥600px 看數量
+  const cols=diffs.length<=3?diffs.length:window.innerWidth>=600?diffs.length:2;
+  g.style.gridTemplateColumns=`repeat(${cols},1fr)`;
+  g.innerHTML='';
+  diffs.forEach((d,i)=>{
+    const el=document.createElement('div');
+    el.className='diff-btn'+(i===selDiffIdx?' sel':'');
+    el.innerHTML=`<span class="diff-lv">${d.lv}</span><span class="diff-name">${d.name}</span><span class="diff-eg">${d.eg}</span>`;
+    el.onclick=()=>{selDiffIdx=i;renderDiffGrid();};
+    g.appendChild(el);
+  });
+}
+
+// ── 格子尺寸：依容器寬與欄數動態計算 ────────────────────
+function calcCellSize(cols){
+  const container=document.querySelector('.container');
+  const padH=window.innerWidth>=900?80:window.innerWidth>=600?64:32;
+  const w=container.offsetWidth - padH;
+  const gap=6;
+  const cellW=Math.floor((w - gap*(cols-1)) / cols);
+  // 最小 52px，最大依平板放大
+  return Math.min(Math.max(cellW,52), 130);
+}
+
+// 算式字型：根據字串長度 + 格子大小自動縮小
+function eqFontSize(display, cellSize){
+  const len=display.replace('=?','').length; // 不算=?
+  const base=cellSize * 0.22;
+  if(len<=3) return Math.round(base);
+  if(len<=5) return Math.round(base*0.85);
+  if(len<=7) return Math.round(base*0.72);
+  return Math.round(base*0.60);
+}
+
+function genPairs(count){
+  const diff=DIFFICULTIES[selOpVal][selDiffIdx];
+  const usedEq=new Set(),usedAns=new Set(),pairs=[];
+  let attempts=0;
+  while(pairs.length<count && attempts<5000){
+    attempts++;
+    const {a,b,sym,ans}=diff.gen();
+    const eqStr=`${a}${sym}${b}`;
+    if(usedEq.has(eqStr)||usedAns.has(ans)) continue;
+    usedEq.add(eqStr); usedAns.add(ans);
+    pairs.push({eq:eqStr,ans});
+  }
+  return pairs;
+}
+
+function restartGame(){
+  speechSynthesis.cancel();
+  COLS=selSizeVal;
+  PAIRS=selSizeVal===4?8:selSizeVal===6?18:32;
+
+  const pairs=genPairs(PAIRS),deck=[];
+  pairs.forEach((p,i)=>{
+    deck.push({id:i,kind:'eq', display:p.eq+'=?',ans:p.ans,matched:false,owner:-1});
+    deck.push({id:i,kind:'ans',display:String(p.ans),ans:p.ans,matched:false,owner:-1});
+  });
+  cards=shuffle(deck); open=[]; lock=false; tries=0; left=PAIRS; combo=0;
+  scores=[0,0]; pairs_by=[0,0]; turn=0;
+  document.getElementById('win-area').innerHTML='';
+  document.getElementById('confetti').innerHTML='';
+
+  const opLabels={add:'➕ 加法',sub:'➖ 減法',mul:'✖️ 乘法',mix:'🔀 混合'};
+  const opCls={add:'add',sub:'sub',mul:'mul',mix:'mix'};
+  const diff=DIFFICULTIES[selOpVal][selDiffIdx];
+  document.getElementById('info-bar').innerHTML=
+    `<span class="op-badge ${opCls[selOpVal]}">${opLabels[selOpVal]}</span>
+     <span class="diff-badge">${diff.lv} ${diff.name}</span>`;
+
+  setMsg('翻開算式牌或答案牌！','');
+  renderTopbar(); renderGrid();
+}
+
+function renderTopbar(){
+  const twb=document.getElementById('turn-bar-wrap'),tb=document.getElementById('topbar');
+  if(selModeVal==='multi'){
+    twb.innerHTML=`<div class="turn-bar">
+      <div class="turn-chip p1${turn===0?' active':''}"><div class="chip-score">${scores[0]}</div><div class="chip-label">P1${turn===0?' ▶ 回合':''}</div></div>
+      <div class="turn-chip p2${turn===1?' active':''}"><div class="chip-score">${scores[1]}</div><div class="chip-label">P2${turn===1?' ▶ 回合':''}</div></div>
+    </div>`;
+    tb.innerHTML=`<div class="stat"><div class="stat-label">剩餘</div><div class="stat-val">${left}</div></div>
+                  <div class="stat"><div class="stat-label">翻牌</div><div class="stat-val">${tries}</div></div>`;
+  }else{
+    twb.innerHTML='';
+    tb.innerHTML=`<div class="stat"><div class="stat-label">剩餘</div><div class="stat-val">${left}</div></div>
+                  <div class="stat"><div class="stat-label">翻牌</div><div class="stat-val">${tries}</div></div>
+                  <div class="combo-badge">x${combo} 連擊</div>`;
+  }
+}
+
+function renderGrid(){
+  const grid=document.getElementById('grid');
+  const cellSize=calcCellSize(COLS);
+  const ansSz=Math.max(Math.round(cellSize*0.30),14);
+  const qSz  =Math.max(Math.round(cellSize*0.22),12);
+
+  grid.style.gridTemplateColumns=`repeat(${COLS},1fr)`;
+  grid.style.gap='6px'; grid.innerHTML='';
+
+  cards.forEach((c,i)=>{
+    const cell=document.createElement('div');
+    const dc=selModeVal==='single'?'done-solo':(c.owner===0?'done-p1':'done-p2');
+    cell.className='cell'+(c.matched?` flip ${dc}`:'');
+    cell.style.height=cellSize+'px'; cell.dataset.i=i;
+
+    const frontCls=c.kind==='eq'?'eq-card':'ans-card';
+    let mainHTML;
+    if(c.kind==='eq'){
+      const fs=eqFontSize(c.display, cellSize);
+      mainHTML=`<span class="c-main" style="font-size:${fs}px">${c.display}</span>`;
+    } else {
+      mainHTML=`<span class="c-main" style="font-size:${ansSz}px">${c.display}</span>`;
+    }
+
+    cell.innerHTML=`<div class="inner">
+      <div class="face back"><div class="back-q" style="font-size:${qSz}px">${c.kind==='eq'?'📝':'🔢'}</div></div>
+      <div class="face front ${frontCls}">${mainHTML}</div>
+    </div>`;
+    cell.addEventListener('click',()=>onTap(i));
+    grid.appendChild(cell);
+  });
+}
+
+function getEl(i){return document.querySelector('[data-i="'+i+'"]');}
+
+function onTap(i){
+  unlockAudio();
+  if(lock)return;
+  const c=cards[i]; if(c.matched||open.includes(i))return;
+  const el=getEl(i);
+  if(selModeVal==='multi') el.classList.add(turn===0?'flip-p1':'flip-p2');
+  el.classList.add('flip');
+  c.kind==='eq' ? speakEq(c.display) : speak(c.display);
+  setMsg((c.kind==='eq'?'📝 ':'🔢 ')+c.display, selModeVal==='multi'?(turn===0?'p1c':'p2c'):'');
+  open.push(i);
+
+  if(open.length===2){
+    tries++; renderTopbar();
+    const[ai,bi]=open,a=cards[ai],b=cards[bi],ea=getEl(ai),eb=getEl(bi);
+    const isMatch=a.id===b.id&&a.kind!==b.kind;
+    if(isMatch){
+      combo++; const pts=combo;
+      setTimeout(()=>{
+        a.matched=true;b.matched=true;a.owner=turn;b.owner=turn;
+        const dc=selModeVal==='single'?'done-solo':(turn===0?'done-p1':'done-p2');
+        ea.classList.remove('flip-p1','flip-p2');eb.classList.remove('flip-p1','flip-p2');
+        ea.classList.add(dc);eb.classList.add(dc);
+        const eqCard=a.kind==='eq'?a:b;
+        if(selModeVal==='multi'){scores[turn]+=pts;pairs_by[turn]++;}
+        else if(combo>1) spawnConfetti();
+        setMsg(
+          selModeVal==='multi'
+            ?(turn===0?'P1':'P2')+' 配對！'+eqCard.display+(combo>1?' +'+pts:'')
+            :'配對！'+eqCard.display+(combo>1?' ×'+combo+'！':''),
+          selModeVal==='multi'?(turn===0?'p1c':'p2c'):'ok'
+        );
+        open=[];left--;renderTopbar();
+        if(left<=0) setTimeout(()=>showResult(),500);
+      },280);
+    }else{
+      combo=0;
+      setTimeout(()=>{
+        ea.classList.add('wrong');eb.classList.add('wrong');
+        setMsg('不對！再試試','err'); lock=true;
+        setTimeout(()=>{
+          ea.classList.remove('flip','wrong','flip-p1','flip-p2');
+          eb.classList.remove('flip','wrong','flip-p1','flip-p2');
+          open=[];lock=false;
+          if(selModeVal==='multi') turn=1-turn;
+          renderTopbar();
+          setMsg(selModeVal==='multi'?(turn===0?'P1 ▶':'P2 ▶'):'繼續！','');
+        },800);
+      },280);
+    }
+  }
+}
+
+function spawnConfetti(){
+  const wrap=document.getElementById('confetti');wrap.innerHTML='';
+  const cols=['#60A5FA','#F472B6','#34D399','#FBBF24','#F87171','#A78BFA'];
+  for(let i=0;i<20;i++){
+    const d=document.createElement('div');d.className='dot';
+    d.style.cssText=`left:${5+Math.random()*90}%;background:${cols[i%cols.length]};animation-delay:${(Math.random()*.3).toFixed(2)}s;animation-duration:${(.9+Math.random()*.5).toFixed(2)}s;`;
+    wrap.appendChild(d);
+  }
+  setTimeout(()=>wrap.innerHTML='',1600);
+}
+
+function showResult(){
+  spawnConfetti();
+  if(selModeVal==='single'){
+    const t3=PAIRS<=8?10:PAIRS<=18?22:42,t2=PAIRS<=8?14:PAIRS<=18?30:58;
+    const stars=tries<=t3?3:tries<=t2?2:1,acc=Math.round(PAIRS/tries*100);
+    document.getElementById('win-area').innerHTML=`
+      <div class="win-overlay">
+        <div class="stars">${'★'.repeat(stars)+'☆'.repeat(3-stars)}</div>
+        <div class="win-title">全部消除！</div>
+        <div class="win-sub">翻了 ${tries} 次・正確率 ${acc}%</div>
+        <div class="win-btn-row"><button onclick="goMenu()">← 選單</button><button onclick="restartGame()">再玩一局</button></div>
+      </div>`;
+  }else{
+    const tie=scores[0]===scores[1],wtext=tie?'平手！':'🏆 '+(scores[0]>scores[1]?'P1':'P2')+' 獲勝！';
+    const p1w=scores[0]>=scores[1],p2w=scores[1]>=scores[0];
+    document.getElementById('win-area').innerHTML=`
+      <div class="win-overlay">
+        <div class="win-title">${wtext}</div>
+        <div class="score-cards">
+          <div class="sc-card p1c${p1w?' winner':''}"><div class="sc-name p1c">P1</div><div class="sc-pts p1c">${scores[0]}</div><div class="sc-detail">${pairs_by[0]} 對</div></div>
+          <div class="sc-card p2c${p2w?' winner':''}"><div class="sc-name p2c">P2</div><div class="sc-pts p2c">${scores[1]}</div><div class="sc-detail">${pairs_by[1]} 對</div></div>
+        </div>
+        <div class="win-sub">總翻牌 ${tries} 次</div>
+        <div class="win-btn-row"><button onclick="goMenu()">← 選單</button><button onclick="restartGame()">再玩一局</button></div>
+      </div>`;
+  }
+}
+
+function setMsg(t,cls){const el=document.getElementById('msg');el.textContent=t;el.className='msg-bar '+cls;}
+
+renderDiffGrid();
+</script>
+</body>
+</html>

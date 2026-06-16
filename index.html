@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>翻翻樂遊戲中心</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f8f8f6;min-height:100vh;}
+
+nav{background:#fff;border-bottom:1px solid #eee;padding:0 1.5rem;display:flex;align-items:center;height:52px;gap:1rem;}
+.nav-logo{font-size:16px;font-weight:600;color:#1a1a1a;text-decoration:none;}
+.nav-links{display:flex;gap:6px;margin-left:auto;}
+.nav-link{font-size:13px;padding:6px 14px;border-radius:8px;color:#666;text-decoration:none;transition:all .15s;}
+.nav-link:hover{background:#f0f0ee;color:#1a1a1a;}
+.nav-link.active{background:#1a1a1a;color:#fff;}
+
+.hero{text-align:center;padding:4rem 1.5rem 2rem;}
+.hero-title{font-size:36px;font-weight:700;color:#1a1a1a;margin-bottom:10px;}
+.hero-sub{font-size:16px;color:#666;max-width:480px;margin:0 auto;}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;max-width:800px;margin:0 auto;padding:0 1.5rem 4rem;}
+
+.game-card{background:#fff;border:1px solid #eee;border-radius:16px;padding:2rem;text-decoration:none;display:block;transition:all .2s;position:relative;overflow:hidden;}
+.game-card:hover{border-color:#ccc;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.06);}
+.game-card-emoji{font-size:40px;margin-bottom:1rem;display:block;}
+.game-card-title{font-size:20px;font-weight:700;color:#1a1a1a;margin-bottom:6px;}
+.game-card-desc{font-size:14px;color:#666;line-height:1.6;margin-bottom:1.25rem;}
+.tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.25rem;}
+.tag{font-size:11px;padding:4px 10px;border-radius:999px;font-weight:500;}
+.tag-blue{background:#E6F1FB;color:#0C447C;}
+.tag-green{background:#EAF3DE;color:#27500A;}
+.tag-purple{background:#EEEDFE;color:#3C3489;}
+.play-btn{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:#185FA5;text-decoration:none;}
+.play-btn::after{content:'→';transition:transform .15s;}
+.game-card:hover .play-btn::after{transform:translateX(4px);}
+
+.accent-blue{border-top:3px solid #378ADD;}
+.accent-green{border-top:3px solid #1D9E75;}
+.accent-amber{border-top:3px solid #EF9F27;}
+.accent-red{border-top:3px solid #E24B4A;}
+.tag-red{background:#FCEBEB;color:#A32D2D;}
+.tag-amber{background:#FAEEDA;color:#633806;}
+
+footer{text-align:center;padding:2rem;font-size:13px;color:#aaa;border-top:1px solid #eee;background:#fff;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">🎮 翻翻樂</a>
+  <div class="nav-links">
+    <a class="nav-link active" href="index.html">首頁</a>
+    <a class="nav-link" href="animal.html">英文遊戲</a>
+    <a class="nav-link" href="math.html">數學遊戲</a>
+    <a class="nav-link" href="typing.html">打字練習</a>
+    <a class="nav-link" href="campaign.html">🏆 闖關</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-title">翻翻樂遊戲中心</div>
+  <div class="hero-sub">翻牌配對學英文、練數學，還有中文打字 — 或挑戰 6 年級闖關模式！</div>
+</div>
+
+<div class="cards">
+  <a class="game-card accent-blue" href="animal.html">
+    <span class="game-card-emoji">🐾</span>
+    <div class="game-card-title">英中翻翻樂</div>
+    <div class="game-card-desc">翻開配對圖案，翻牌同步唸出英文+中文發音。50+ 詞彙涵蓋動物、食物、交通、自然、運動、太空。</div>
+    <div class="tag-row">
+      <span class="tag tag-blue">6×6</span>
+      <span class="tag tag-blue">8×8</span>
+      <span class="tag tag-blue">10×10</span>
+      <span class="tag tag-purple">單人 / 雙人</span>
+    </div>
+    <span class="play-btn">開始遊戲</span>
+  </a>
+
+  <a class="game-card accent-green" href="math.html">
+    <span class="game-card-emoji">🔢</span>
+    <div class="game-card-title">數學翻翻樂</div>
+    <div class="game-card-desc">翻開算式牌，找到對應的答案牌消除！加法、減法、乘法，或全部混合，難度自選。</div>
+    <div class="tag-row">
+      <span class="tag tag-green">4×4</span>
+      <span class="tag tag-green">6×6</span>
+      <span class="tag tag-green">8×8</span>
+      <span class="tag tag-purple">單人 / 雙人</span>
+    </div>
+    <span class="play-btn">開始遊戲</span>
+  </a>
+
+  <a class="game-card accent-amber" href="typing.html">
+    <span class="game-card-emoji">⌨️</span>
+    <div class="game-card-title">中文打字練習</div>
+    <div class="game-card-desc">看圖打出正確的中文字！從小學二年級到成語挑戰，共五個難度，還能自訂題庫。</div>
+    <div class="tag-row">
+      <span class="tag tag-amber">5種難度</span>
+      <span class="tag tag-amber">成語挑戰</span>
+      <span class="tag tag-purple">自訂題庫</span>
+    </div>
+    <span class="play-btn">開始遊戲</span>
+  </a>
+</div>
+
+<div style="max-width:800px;margin:0 auto 2rem;padding:0 1.5rem;">
+  <a class="game-card accent-red" href="campaign.html" style="display:block;background:linear-gradient(135deg,#fff 0%,#FFF5F5 100%);text-decoration:none;">
+    <span class="game-card-emoji">🏆</span>
+    <div class="game-card-title">闖關模式 <span style="font-size:13px;font-weight:400;color:#888;margin-left:6px;">全新！</span></div>
+    <div class="game-card-desc">6 個年級 × 每級 10 關，翻牌、數學、打字三種挑戰輪番上陣，限時闖關！內建提示、加時、慢速等拯救機制，通關獲得星星評分。</div>
+    <div class="tag-row">
+      <span class="tag tag-red">6 年級</span>
+      <span class="tag tag-red">60 關</span>
+      <span class="tag tag-amber">限時挑戰</span>
+      <span class="tag tag-purple">提示 / 加時道具</span>
+    </div>
+    <span class="play-btn">開始闖關</span>
+  </a>
+</div>
+<footer>翻翻樂遊戲中心 · 開源免費 · 歡迎分享</footer>
+
+</body>
+</html>
