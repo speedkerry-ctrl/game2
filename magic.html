@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>文字魔法解謎大冒險</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    overflow: hidden;
+    font-family: "Microsoft JhengHei", "PingFang TC", "Heiti TC", sans-serif;
+    background: #222;
+    touch-action: manipulation;
+  }
+
+  /* ── 導覽列 ── */
+  #top-nav {
+    position: fixed; top: 0; left: 0; width: 100%; height: 46px;
+    background: #1a1a2e; border-bottom: 2px solid #f9ca24;
+    display: flex; align-items: center; padding: 0 12px; gap: 6px;
+    z-index: 999;
+  }
+  #top-nav .nav-logo {
+    font-size: 14px; font-weight: 700; color: #f9ca24;
+    text-decoration: none; white-space: nowrap; margin-right: 4px;
+  }
+  #top-nav .nav-link {
+    font-size: 11px; padding: 4px 8px; border-radius: 6px;
+    color: #ccc; text-decoration: none; white-space: nowrap;
+  }
+  #top-nav .nav-link.active { background: #f9ca24; color: #1a1a2e; font-weight: 700; }
+  #top-nav .nav-link:not(.active):hover { background: rgba(255,255,255,.1); }
+  #nav-spacer { height: 46px; width: 100%; flex-shrink: 0; }
+  #game-wrapper {
+    position: fixed;
+    top: 46px; left: 0; right: 0; bottom: 0;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    background: linear-gradient(to bottom, #6dc4ff 0%, #bdf0ff 55%, #9be37d 56%, #6fb84f 100%);
+    overflow: hidden;
+  }
+
+  /* ---------- 頂部狀態欄 ---------- */
+  #status-bar {
+    position: absolute; top: 0; left: 0; width: 100%;
+    height: 52px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 12px;
+    background: rgba(255,255,255,0.85);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    z-index: 50;
+    font-weight: bold;
+  }
+  #level-label {
+    font-size: 18px; color: #5b3a29;
+    background: #ffe28a; padding: 6px 14px; border-radius: 20px;
+    border: 2px solid #d99c00;
+  }
+  #restart-btn {
+    font-size: 15px; padding: 8px 16px; border-radius: 18px;
+    border: 2px solid #c0392b; background: #ff6b5b; color: #fff;
+    font-weight: bold; cursor: pointer;
+  }
+  #restart-btn:active { transform: scale(0.95); }
+
+  #timer-box {
+    font-size: 18px; font-weight: bold; color: #fff;
+    background: #e74c3c; padding: 6px 14px; border-radius: 16px;
+    display: none;
+    min-width: 60px; text-align: center;
+  }
+  #timer-box.show { display: inline-block; }
+
+  /* ---------- 場景 ---------- */
+  #scene {
+    position: absolute; top: 52px; left: 0;
+    width: 100%; height: calc(100% - 52px - 90px);
+    overflow: hidden;
+  }
+  #ground {
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 22%;
+    background: repeating-linear-gradient(90deg, #6fb84f 0 40px, #5fa843 40px 80px);
+    border-top: 6px solid #4d8a36;
+  }
+  #scene-title {
+    position: absolute; top: 10px; left: 0; width: 100%;
+    text-align: center; font-size: 16px; color: #3b2b1d;
+    text-shadow: 0 1px 2px #fff;
+    padding: 4px 10px; pointer-events: none;
+  }
+  #hint-text {
+    position: absolute; top: 38px; left: 0; width: 100%;
+    text-align: center; font-size: 13px; color: #555;
+    pointer-events: none;
+  }
+
+  #player {
+    position: absolute; bottom: 22%; left: 40px;
+    width: 60px; height: 70px;
+    font-size: 50px;
+    line-height: 70px;
+    text-align: center;
+    transition: left 0.4s ease, transform 0.3s;
+    z-index: 30;
+    user-select: none;
+  }
+  #obstacle {
+    position: absolute; bottom: 22%; left: 60%;
+    font-size: 64px;
+    text-align: center;
+    z-index: 20;
+    user-select: none;
+    transition: opacity 0.4s, transform 0.4s;
+  }
+  .summon-item {
+    position: absolute;
+    font-size: 46px;
+    z-index: 25;
+    top: -60px;
+    animation: dropDown 0.9s ease-in forwards;
+    user-select: none;
+  }
+  @keyframes dropDown {
+    to { top: 60%; }
+  }
+  .fly-away {
+    animation: flyOff 0.6s ease-in forwards !important;
+  }
+  @keyframes flyOff {
+    to { opacity: 0; transform: translateY(-120px) scale(0.4) rotate(40deg); }
+  }
+  .shake { animation: shakeAnim 0.4s; }
+  @keyframes shakeAnim {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+  .fall-down {
+    animation: fallDown 0.8s ease-in forwards !important;
+  }
+  @keyframes fallDown {
+    to { transform: translateY(200px) rotate(90deg); opacity: 0.2; }
+  }
+
+  .star {
+    position: absolute;
+    font-size: 28px;
+    z-index: 60;
+    animation: starPop 1s ease-out forwards;
+    pointer-events: none;
+  }
+  @keyframes starPop {
+    0% { transform: scale(0) translateY(0); opacity: 1; }
+    50% { transform: scale(1.4) translateY(-60px); opacity: 1; }
+    100% { transform: scale(0.8) translateY(-140px); opacity: 0; }
+  }
+
+  /* ---------- 倒數進度條 ---------- */
+  #countdown-bar-wrap {
+    position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
+    width: 70%; height: 14px; background: rgba(0,0,0,0.2);
+    border-radius: 8px; overflow: hidden; z-index: 40;
+    display: none;
+  }
+  #countdown-bar-wrap.show { display: block; }
+  #countdown-bar {
+    height: 100%; width: 100%;
+    background: linear-gradient(90deg,#ffd23f,#ff6b5b);
+    transition: width 0.2s linear;
+  }
+
+  /* ---------- 底部輸入區 ---------- */
+  #input-area {
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 90px;
+    background: #2c3e50;
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px; padding: 10px 14px;
+    z-index: 60;
+    box-shadow: 0 -3px 10px rgba(0,0,0,0.3);
+  }
+  #magic-icon { font-size: 30px; }
+  #word-input {
+    flex: 1; max-width: 420px;
+    font-size: 20px; padding: 12px 14px;
+    border-radius: 24px; border: 3px solid #f9ca24;
+    outline: none;
+    text-align: center;
+  }
+  #cast-btn {
+    font-size: 18px; padding: 12px 20px; border-radius: 24px;
+    border: none; background: #f9ca24; color: #4a2e00; font-weight: bold;
+    cursor: pointer;
+  }
+  #cast-btn:active { transform: scale(0.95); }
+
+  /* ---------- 訊息提示 ---------- */
+  #message-banner {
+    position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) scale(0.5);
+    background: rgba(255,255,255,0.95);
+    border-radius: 18px;
+    padding: 22px 30px;
+    font-size: 22px; font-weight: bold;
+    text-align: center;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    z-index: 100;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    max-width: 80%;
+  }
+  #message-banner.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  #message-banner.success { color: #1e8449; border: 3px solid #27ae60; }
+  #message-banner.fail { color: #c0392b; border: 3px solid #e74c3c; }
+
+  #win-screen {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: none; align-items: center; justify-content: center;
+    z-index: 200; flex-direction: column; gap: 16px;
+  }
+  #win-screen.show { display: flex; }
+  #win-screen h1 { color: #fff200; font-size: 36px; text-shadow: 0 2px 6px #000; margin: 0; }
+  #win-screen button {
+    font-size: 18px; padding: 14px 30px; border-radius: 24px;
+    border: none; background: #f9ca24; font-weight: bold; cursor: pointer;
+  }
+
+  @media (max-width: 480px) {
+    #player { font-size: 40px; left: 20px; }
+    #obstacle { font-size: 50px; }
+    #status-bar { height: 44px; }
+    #scene { top: 44px; height: calc(100% - 44px - 80px); }
+    #input-area { height: 80px; }
+    #word-input { font-size: 17px; }
+    #cast-btn { font-size: 15px; padding: 10px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<nav id="top-nav">
+  <a class="nav-logo" href="index.html">🎮 翻翻樂</a>
+  <a class="nav-link" href="index.html">首頁</a>
+  <a class="nav-link" href="animal.html">英文</a>
+  <a class="nav-link" href="math.html">數學</a>
+  <a class="nav-link" href="typing.html">打字</a>
+  <a class="nav-link" href="campaign.html">🏆闖關</a>
+  <a class="nav-link active" href="magic.html">🧙魔法</a>
+</nav>
+
+<div id="game-wrapper">
+
+  <div id="status-bar">
+    <div id="level-label">關卡 1 / 10</div>
+    <div id="timer-box">10</div>
+    <button id="restart-btn">🔄 重來</button>
+  </div>
+
+  <div id="scene">
+    <div id="scene-title">載入中...</div>
+    <div id="hint-text"></div>
+    <div id="countdown-bar-wrap"><div id="countdown-bar"></div></div>
+    <div id="ground"></div>
+    <div id="player">🧙</div>
+    <div id="obstacle">❓</div>
+  </div>
+
+  <div id="message-banner"></div>
+
+  <div id="input-area">
+    <div id="magic-icon">✨</div>
+    <input id="word-input" type="text" placeholder="輸入魔法咒語..." autocomplete="off" autocapitalize="off" />
+    <button id="cast-btn">施法！</button>
+  </div>
+
+  <div id="win-screen">
+    <h1>🎉 恭喜你完成所有魔法試煉！🎉</h1>
+    <button id="play-again-btn">再玩一次</button>
+  </div>
+
+</div>
+
+<script>
+/* =========================================================
+   音效系統 (Web Audio API 合成音效)
+========================================================= */
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let actx = null;
+function ensureAudio() {
+  if (!actx) actx = new AudioCtx();
+  if (actx.state === 'suspended') actx.resume();
+}
+function beep(freq, duration, type='sine', startGain=0.2, when=0) {
+  if (!actx) return;
+  const osc = actx.createOscillator();
+  const gain = actx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  gain.gain.value = startGain;
+  osc.connect(gain);
+  gain.connect(actx.destination);
+  const t = actx.currentTime + when;
+  osc.start(t);
+  gain.gain.setValueAtTime(startGain, t);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+  osc.stop(t + duration + 0.02);
+}
+function playSuccessSound() {
+  ensureAudio();
+  // 上升音階
+  [523,659,784,1047].forEach((f,i)=> beep(f, 0.18, 'triangle', 0.25, i*0.1));
+}
+function playFailSound() {
+  ensureAudio();
+  // 下降"放屁"音
+  beep(180, 0.05, 'sawtooth', 0.25, 0);
+  beep(140, 0.05, 'sawtooth', 0.25, 0.06);
+  beep(100, 0.05, 'sawtooth', 0.25, 0.12);
+  beep(70, 0.18, 'sawtooth', 0.25, 0.18);
+}
+function playClickSound() {
+  ensureAudio();
+  beep(440, 0.06, 'square', 0.12, 0);
+}
+function playTickSound() {
+  ensureAudio();
+  beep(880, 0.05, 'square', 0.08, 0);
+}
+function playGameWinSound() {
+  ensureAudio();
+  [523,659,784,1047,1318].forEach((f,i)=> beep(f, 0.25, 'triangle', 0.3, i*0.13));
+}
+
+/* =========================================================
+   關卡資料
+========================================================= */
+const LEVELS = [
+  {
+    title: "第1關：斷崖",
+    hint: "前方是一道深不見底的懸崖...怎麼過去呢？",
+    obstacleEmoji: "🕳️",
+    keywords: {
+      bridge: ["橋","橋樑","吊橋","木橋","石橋","bridge","rampa"],
+      wings:  ["翅膀","羽翼","翼","wings","wing"],
+      rocket: ["火箭","噴射","噴射背包","飛行器","rocket","jetpack"]
+    },
+    itemEmoji: { bridge:"🌉", wings:"🦋", rocket:"🚀" },
+    successMsg: "太厲害了！順利通過斷崖！",
+    extraHint: "提示：可以試試「橋」、「翅膀」或「火箭」這類能讓你跨過或飛過去的東西喔！",
+    timeLimit: null
+  },
+  {
+    title: "第2關：飢餓的獅子",
+    hint: "一隻飢餓的獅子擋住了去路，正在咆哮！",
+    obstacleEmoji: "🦁",
+    keywords: {
+      meat:  ["肉","牛肉","雞肉","雞","豬肉","食物","骨頭","meat","steak","chicken","food"],
+      cage:  ["籠子","鐵籠","箱子","盒子","cage","box"],
+      cloak: ["隱形斗篷","斗篷","隱形","隱身","cloak","invisible","invisibility"]
+    },
+    itemEmoji: { meat:"🍖", cage:"📦", cloak:"🧥" },
+    successMsg: "獅子被你解決了！繼續前進吧！",
+    extraHint: "提示：獅子肚子餓了，或者可以把牠關起來，也可以讓自己隱形溜過去！",
+    timeLimit: null
+  },
+  {
+    title: "第3關：熊熊大火",
+    hint: "地上燒著熊熊烈火，擋住了前進的道路！",
+    obstacleEmoji: "🔥",
+    keywords: {
+      water: ["水","清水","雨水","雨","海水","噴水","water","rain"],
+      extinguisher: ["滅火器","extinguisher"],
+      carpet: ["飛毯","地毯","毯子","飛行毯","carpet","fly","magic carpet"]
+    },
+    itemEmoji: { water:"💧", extinguisher:"🧯", carpet:"🧞" },
+    successMsg: "火被滅掉了！太棒了！",
+    extraHint: "提示：火最怕的是「水」，也可以用「滅火器」，或乾脆飛到火的上面！",
+    timeLimit: null
+  },
+  {
+    title: "第4關：滾石來襲！",
+    hint: "⚠️ 一顆巨大的石頭正朝你滾過來！快想辦法！",
+    obstacleEmoji: "🪨",
+    keywords: {
+      wall: ["牆壁","牆","圍牆","盾牌","防護牆","wall","shield"],
+      bomb: ["炸彈","炸藥","地雷","bomb","tnt","dynamite"],
+      trampoline: ["彈簧床","彈跳床","彈力床","trampoline","spring"]
+    },
+    itemEmoji: { wall:"🧱", bomb:"💣", trampoline:"🤸" },
+    successMsg: "千鈞一髮！你躲過了滾石！",
+    extraHint: "提示：可以擋住它（牆壁）、炸掉它（炸彈），或跳過它（彈簧床）！",
+    timeLimit: 10
+  },
+  {
+    title: "第5關：高牆擋路",
+    hint: "一座極高的磚牆擋在正前方，根本爬不上去...",
+    obstacleEmoji: "🧱",
+    keywords: {
+      ladder: ["梯子","樓梯","階梯","爬梯","ladder","stairs","staircase"],
+      hammer: ["大錘","錘子","鐵錘","槌子","大槌","榔頭","木槌","斧頭","斧","hammer","mallet","axe"],
+      portal: ["傳送門","傳送","任意門","門","大門","portal","door","gate"]
+    },
+    itemEmoji: { ladder:"🪜", hammer:"🔨", portal:"🌀" },
+    successMsg: "成功越過高牆！",
+    extraHint: "提示：可以爬過去（梯子）、敲爛它（大錘／槌子），或直接穿過去（傳送門）！",
+    timeLimit: null
+  },
+  {
+    title: "第6關：漆黑的山洞",
+    hint: "進入山洞後一片漆黑，什麼也看不到...",
+    obstacleEmoji: "⬛",
+    keywords: {
+      flashlight: ["手電筒","電筒","手電","flashlight","torch"],
+      sun:        ["太陽","陽光","光","亮光","燈光","sun","light","sunlight"],
+      candle:     ["蠟燭","燭光","candle"]
+    },
+    itemEmoji: { flashlight:"🔦", sun:"☀️", candle:"🕯️" },
+    successMsg: "山洞被點亮了！看得清清楚楚！",
+    extraHint: "提示：想想看什麼東西可以「發光」，像手電筒、太陽或蠟燭！",
+    timeLimit: null
+  },
+  {
+    title: "第7關：貪財的守衛",
+    hint: "一位守衛擋住城門，伸手向你要東西...",
+    obstacleEmoji: "🛡️",
+    keywords: {
+      coin:    ["金幣","硬幣","金子","錢","錢幣","coin","gold","money"],
+      diamond: ["鑽石","寶石","珠寶","diamond","gem","jewel"],
+      key:     ["鑰匙","key"]
+    },
+    itemEmoji: { coin:"🪙", diamond:"💎", key:"🔑" },
+    successMsg: "守衛滿意地讓開了道路！",
+    extraHint: "提示：守衛喜歡值錢的東西，像金幣或鑽石；也可以直接用鑰匙開另一個門！",
+    timeLimit: null
+  },
+  {
+    title: "第8關：暴風雨河流",
+    hint: "一條湍急的河流擋在前方，直接游過去會被沖走！",
+    obstacleEmoji: "🌊",
+    keywords: {
+      boat:      ["船","小船","木船","帆船","boat","ship"],
+      submarine: ["潛水艇","潛艇","submarine"],
+      ice:       ["冰塊","冰","結冰","ice"]
+    },
+    itemEmoji: { boat:"⛵", submarine:"🚤", ice:"🧊" },
+    successMsg: "順利渡過了洶湧的河流！",
+    extraHint: "提示：可以坐船過河、潛到水下，或把河水變成冰！",
+    timeLimit: null
+  },
+  {
+    title: "第9關：惡作劇的幽靈！",
+    hint: "⚠️ 一隻幽靈正飄過來要抓你了！快想辦法！",
+    obstacleEmoji: "👻",
+    keywords: {
+      mirror: ["鏡子","鏡","mirror"],
+      cross:  ["十字架","聖經","cross","bible"],
+      vacuum: ["吸塵器","真空吸塵器","vacuum","ghostbuster"]
+    },
+    itemEmoji: { mirror:"🪞", cross:"✝️", vacuum:"🧹" },
+    successMsg: "幽靈被你嚇跑了！",
+    extraHint: "提示：幽靈怕鏡子、十字架，或者直接把牠吸進吸塵器裡！",
+    timeLimit: 8
+  },
+  {
+    title: "第10關：沉睡的巨龍 (Boss)",
+    hint: "巨龍守護著寶箱，只要靠近就會醒來噴火！這是最終試煉！",
+    obstacleEmoji: "🐉",
+    keywords: {
+      music:   ["搖籃曲","音樂","歌","歌曲","豎琴","music","harp","song","lullaby"],
+      smoke:   ["隱形","隱身","煙霧","煙","smoke","invisible"],
+      shield2: ["盾牌","護甲","盔甲","盾","shield","armor"]
+    },
+    itemEmoji: { music:"🎵", smoke:"💨", shield2:"🛡️" },
+    successMsg: "巨龍被你制服了！寶箱是你的了！恭喜通關全部關卡！",
+    extraHint: "提示：可以用音樂讓巨龍睡得更沉、用煙霧隱形溜過去，或穿上盾牌硬闖！",
+    timeLimit: null
+  }
+];
+
+/* 模糊比對：將輸入字串與關鍵字做雙向包含比對，
+   單字（長度<=1）需完全相符，避免誤判 */
+function fuzzyMatch(input, keyword) {
+  const a = input.trim().toLowerCase();
+  const b = keyword.trim().toLowerCase();
+  if (!a) return false;
+  if (a === b) return true;
+  if (a.length <= 1 || b.length <= 1) return a === b;
+  return a.includes(b) || b.includes(a);
+}
+
+function findMatchedKey(lvl, rawInput) {
+  const val = rawInput.trim().toLowerCase();
+  if (!val) return null;
+  for (const key in lvl.keywords) {
+    for (const kw of lvl.keywords[key]) {
+      if (fuzzyMatch(val, kw)) return key;
+    }
+  }
+  return null;
+}
+
+/* 趣味小物件（非正解時隨機掉落，不解除障礙） */
+const FUNNY_ITEMS = ["🍗","🍌","🧦","🪀","🎈","🦆","🧻","🍕","🐸","🥚"];
+
+/* =========================================================
+   遊戲狀態與 DOM
+========================================================= */
+let currentLevelIndex = 0;
+let timerInterval = null;
+let timeLeft = 0;
+let levelSolved = false;
+let wrongAttempts = 0;
+
+const sceneEl = document.getElementById('scene');
+const sceneTitleEl = document.getElementById('scene-title');
+const hintTextEl = document.getElementById('hint-text');
+const obstacleEl = document.getElementById('obstacle');
+const playerEl = document.getElementById('player');
+const wordInput = document.getElementById('word-input');
+const castBtn = document.getElementById('cast-btn');
+const levelLabel = document.getElementById('level-label');
+const restartBtn = document.getElementById('restart-btn');
+const messageBanner = document.getElementById('message-banner');
+const timerBox = document.getElementById('timer-box');
+const countdownWrap = document.getElementById('countdown-bar-wrap');
+const countdownBar = document.getElementById('countdown-bar');
+const winScreen = document.getElementById('win-screen');
+const playAgainBtn = document.getElementById('play-again-btn');
+
+function loadLevel(index) {
+  clearTimer();
+  levelSolved = false;
+  wrongAttempts = 0;
+  const lvl = LEVELS[index];
+  levelLabel.textContent = `關卡 ${index+1} / ${LEVELS.length}`;
+  sceneTitleEl.textContent = lvl.title;
+  hintTextEl.textContent = lvl.hint;
+  obstacleEl.textContent = lvl.obstacleEmoji;
+  obstacleEl.style.opacity = 1;
+  obstacleEl.style.transform = 'none';
+  obstacleEl.classList.remove('fall-down','fly-away');
+  obstacleEl.style.left = '60%';
+  playerEl.style.left = '40px';
+  playerEl.style.transform = 'none';
+  wordInput.value = '';
+  document.querySelectorAll('.summon-item').forEach(el => el.remove());
+
+  if (lvl.timeLimit) {
+    timeLeft = lvl.timeLimit;
+    timerBox.classList.add('show');
+    countdownWrap.classList.add('show');
+    timerBox.textContent = timeLeft;
+    countdownBar.style.width = '100%';
+    timerInterval = setInterval(() => {
+      timeLeft -= 1;
+      timerBox.textContent = timeLeft;
+      countdownBar.style.width = (timeLeft / lvl.timeLimit * 100) + '%';
+      if (timeLeft <= 3 && timeLeft > 0) playTickSound();
+      if (timeLeft <= 0) {
+        clearTimer();
+        if (!levelSolved) failLevel("時間到！");
+      }
+    }, 1000);
+  } else {
+    timerBox.classList.remove('show');
+    countdownWrap.classList.remove('show');
+  }
+}
+
+function clearTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+function normalizeInput(str) {
+  return str.trim().toLowerCase();
+}
+
+function showMessage(text, type) {
+  messageBanner.textContent = text;
+  messageBanner.className = 'show ' + type;
+  setTimeout(() => {
+    messageBanner.className = '';
+  }, 1400);
+}
+
+function spawnSummonItem(emoji, leftPercent) {
+  const el = document.createElement('div');
+  el.className = 'summon-item';
+  el.textContent = emoji;
+  el.style.left = leftPercent + '%';
+  sceneEl.appendChild(el);
+  setTimeout(() => el.remove(), 1000);
+}
+
+function spawnStars() {
+  for (let i=0;i<8;i++){
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.textContent = '⭐';
+    star.style.left = (30 + Math.random()*40) + '%';
+    star.style.top = '50%';
+    star.style.animationDelay = (i*0.07)+'s';
+    sceneEl.appendChild(star);
+    setTimeout(()=> star.remove(), 1200);
+  }
+}
+
+function handleSubmit() {
+  ensureAudio();
+  if (levelSolved) return;
+  const raw = wordInput.value;
+  if (!raw.trim()) return;
+  const lvl = LEVELS[currentLevelIndex];
+  const matchedKey = findMatchedKey(lvl, raw);
+
+  if (matchedKey) {
+    const emoji = lvl.itemEmoji[matchedKey];
+    spawnSummonItem(emoji, 55);
+    solveLevel(lvl);
+  } else {
+    wrongAttempts++;
+    // 惡作劇/趣味輸入：隨機掉落趣味小物，不解除障礙
+    const funny = FUNNY_ITEMS[Math.floor(Math.random()*FUNNY_ITEMS.length)];
+    spawnSummonItem(funny, 50 + Math.random()*15);
+    obstacleEl.classList.add('shake');
+    setTimeout(()=> obstacleEl.classList.remove('shake'), 400);
+    playFailSound();
+
+    if (wrongAttempts >= 3 && lvl.extraHint) {
+      showMessage(lvl.extraHint, 'fail');
+      wrongAttempts = 0; // 提示後重新計次，避免一直洗畫面
+    } else {
+      showMessage("咦？這個咒語好像沒有用，再試試別的吧！", 'fail');
+    }
+  }
+  wordInput.value = '';
+  wordInput.focus();
+}
+
+function solveLevel(lvl) {
+  levelSolved = true;
+  clearTimer();
+  playSuccessSound();
+  spawnStars();
+  obstacleEl.classList.add('fly-away');
+  showMessage(lvl.successMsg, 'success');
+  playerEl.style.left = '75%';
+
+  setTimeout(() => {
+    if (currentLevelIndex < LEVELS.length - 1) {
+      currentLevelIndex++;
+      loadLevel(currentLevelIndex);
+    } else {
+      playGameWinSound();
+      winScreen.classList.add('show');
+    }
+  }, 1500);
+}
+
+function failLevel(reason) {
+  playFailSound();
+  playerEl.classList.add('shake');
+  showMessage("哎呀！" + reason + " 再試一次吧！", 'fail');
+  setTimeout(() => {
+    playerEl.classList.remove('shake');
+    loadLevel(currentLevelIndex);
+  }, 1500);
+}
+
+/* =========================================================
+   事件綁定
+========================================================= */
+castBtn.addEventListener('click', handleSubmit);
+wordInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') handleSubmit();
+});
+restartBtn.addEventListener('click', () => {
+  playClickSound();
+  currentLevelIndex = 0;
+  winScreen.classList.remove('show');
+  loadLevel(currentLevelIndex);
+});
+playAgainBtn.addEventListener('click', () => {
+  playClickSound();
+  currentLevelIndex = 0;
+  winScreen.classList.remove('show');
+  loadLevel(currentLevelIndex);
+});
+
+/* 手機鍵盤遮擋處理：聚焦輸入框時，確保畫面可視範圍正確並捲動到輸入區 */
+wordInput.addEventListener('focus', () => {
+  ensureAudio();
+  setTimeout(() => {
+    wordInput.scrollIntoView({ block: 'end', behavior: 'smooth' });
+  }, 250);
+});
+
+/* 第一次互動時啟動 AudioContext（瀏覽器政策要求使用者互動後才能播放） */
+document.body.addEventListener('click', ensureAudio, { once: true });
+document.body.addEventListener('touchstart', ensureAudio, { once: true });
+
+/* 啟動遊戲 */
+loadLevel(currentLevelIndex);
+</script>
+
+</body>
+</html>
