@@ -13,29 +13,10 @@
     background: #222;
     touch-action: manipulation;
   }
-
-  /* ── 導覽列 ── */
-  #top-nav {
-    position: fixed; top: 0; left: 0; width: 100%; height: 46px;
-    background: #1a1a2e; border-bottom: 2px solid #f9ca24;
-    display: flex; align-items: center; padding: 0 12px; gap: 6px;
-    z-index: 999;
-  }
-  #top-nav .nav-logo {
-    font-size: 14px; font-weight: 700; color: #f9ca24;
-    text-decoration: none; white-space: nowrap; margin-right: 4px;
-  }
-  #top-nav .nav-link {
-    font-size: 11px; padding: 4px 8px; border-radius: 6px;
-    color: #ccc; text-decoration: none; white-space: nowrap;
-  }
-  #top-nav .nav-link.active { background: #f9ca24; color: #1a1a2e; font-weight: 700; }
-  #top-nav .nav-link:not(.active):hover { background: rgba(255,255,255,.1); }
-  #nav-spacer { height: 46px; width: 100%; flex-shrink: 0; }
   #game-wrapper {
-    position: fixed;
-    top: 46px; left: 0; right: 0; bottom: 0;
+    position: relative;
     width: 100%;
+    height: 100%;
     max-width: 900px;
     margin: 0 auto;
     background: linear-gradient(to bottom, #6dc4ff 0%, #bdf0ff 55%, #9be37d 56%, #6fb84f 100%);
@@ -239,16 +220,6 @@
 </style>
 </head>
 <body>
-
-<nav id="top-nav">
-  <a class="nav-logo" href="index.html">🎮 翻翻樂</a>
-  <a class="nav-link" href="index.html">首頁</a>
-  <a class="nav-link" href="animal.html">英文</a>
-  <a class="nav-link" href="math.html">數學</a>
-  <a class="nav-link" href="typing.html">打字</a>
-  <a class="nav-link" href="campaign.html">🏆闖關</a>
-  <a class="nav-link active" href="magic.html">🧙魔法</a>
-</nav>
 
 <div id="game-wrapper">
 

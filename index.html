@@ -40,6 +40,10 @@ nav{background:#fff;border-bottom:1px solid #eee;padding:0 1.5rem;display:flex;a
 .accent-amber{border-top:3px solid #EF9F27;}
 .accent-red{border-top:3px solid #E24B4A;}
 .accent-magic{border-top:3px solid #8B5CF6;}
+.accent-teal{border-top:3px solid #0EA5E9;}
+.accent-sky{border-top:3px solid #06B6D4;}
+.tag-teal{background:#E0F9F5;color:#0E7490;}
+.tag-sky{background:#E0F2FE;color:#0369A1;}
 .tag-magic{background:#EDE9FE;color:#4C1D95;}
 .tag-red{background:#FCEBEB;color:#A32D2D;}
 .tag-amber{background:#FAEEDA;color:#633806;}
@@ -133,7 +137,32 @@ footer{text-align:center;padding:2rem;font-size:13px;color:#aaa;border-top:1px s
     <span class="play-btn">開始冒險</span>
   </a>
 </div>
-<footer>翻翻樂遊戲中心 · 開源免費 · 歡迎分享</footer>
+<div style="max-width:800px;margin:0 auto 0;padding:0 1.5rem;">
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:2rem;">
+    <a class="game-card accent-teal" href="idiom.html" style="display:block;text-decoration:none;">
+      <span class="game-card-emoji">📜</span>
+      <div class="game-card-title">看圖猜成語</div>
+      <div class="game-card-desc">看表情符號組成的圖案，猜出正確成語！3 種難度，90 題成語，限時 15 秒作答，超時自動顯示提示。</div>
+      <div class="tag-row">
+        <span class="tag tag-teal">初/中/高 三級</span>
+        <span class="tag tag-teal">90 題成語</span>
+        <span class="tag tag-purple">限時 15 秒</span>
+      </div>
+      <span class="play-btn">開始猜成語</span>
+    </a>
+    <a class="game-card accent-sky" href="wordcatcher.html" style="display:block;text-decoration:none;">
+      <span class="game-card-emoji">🎯</span>
+      <div class="game-card-title">英文單字捕手</div>
+      <div class="game-card-desc">聽英文發音，移動網子接住對應的圖案！圖案從左飛到右，考驗反應力與英文聽力，60 秒計時挑戰。</div>
+      <div class="tag-row">
+        <span class="tag tag-sky">初/中/高 三速</span>
+        <span class="tag tag-sky">45 個單字</span>
+        <span class="tag tag-amber">60 秒計時</span>
+      </div>
+      <span class="play-btn">開始捕單字</span>
+    </a>
+  </div>
+</div><footer>翻翻樂遊戲中心 · 開源免費 · 歡迎分享</footer>
 
 </body>
 </html>

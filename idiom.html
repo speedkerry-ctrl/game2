@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>看圖猜成語</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBF3E3;--paper-deep:#F3E6C9;--red:#C8372F;--red-dark:#9E2A23;
+    --gold:#D4A017;--gold-light:#F1D989;--ink:#2B2420;--ink-soft:#5C4E3F;
+    --jade:#3F8F6B;--jade-dark:#2E6E51;--card:#FFFFFF;font-size:16px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0;font-family:'Noto Sans TC',sans-serif;color:var(--ink);
+    background:radial-gradient(circle at 15% 10%,rgba(212,160,23,0.12),transparent 40%),
+      radial-gradient(circle at 90% 85%,rgba(200,55,47,0.10),transparent 45%),var(--paper);
+    overflow:hidden;height:100vh;width:100vw;position:fixed;inset:0;
+  }
+  .brush{font-family:'Ma Shan Zheng',cursive;}
+
+  /* ── 導覽列 ── */
+  #top-nav{
+    position:fixed;top:0;left:0;width:100%;height:44px;
+    background:#2B2420;border-bottom:2px solid var(--gold);
+    display:flex;align-items:center;padding:0 10px;gap:4px;z-index:9999;
+  }
+  #top-nav .nav-logo{font-size:13px;font-weight:700;color:var(--gold-light);text-decoration:none;white-space:nowrap;margin-right:4px;}
+  #top-nav .nav-link{font-size:11px;padding:4px 7px;border-radius:6px;color:#ccc;text-decoration:none;white-space:nowrap;}
+  #top-nav .nav-link.active{background:var(--gold);color:#2B2420;font-weight:700;}
+  #top-nav .nav-link:not(.active):hover{background:rgba(255,255,255,.1);}
+
+  #app{height:100%;width:100%;display:flex;flex-direction:column;position:relative;padding-top:44px;}
+  .screen{
+    position:absolute;inset:0;top:44px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:18px;overflow-y:auto;
+  }
+  [hidden]{display:none !important;}
+  .corner-seal{position:absolute;width:46px;height:46px;border:3px solid var(--red);border-radius:8px;opacity:0.18;}
+  .corner-seal.tl{top:54px;left:14px;}.corner-seal.br{bottom:14px;right:14px;}
+  #startScreen .title-wrap{text-align:center;margin-bottom:16px;}
+  #startScreen h1{font-size:clamp(28px,7vw,44px);color:var(--red);margin:0;text-shadow:1px 2px 0 rgba(0,0,0,0.06);}
+  #startScreen .subtitle{font-weight:700;color:var(--ink-soft);font-size:clamp(12px,2.4vw,15px);margin-top:2px;}
+  .panel{background:var(--card);border-radius:20px;padding:20px clamp(14px,4vw,30px);box-shadow:0 12px 0 rgba(43,36,32,0.06),0 20px 36px rgba(43,36,32,0.14);max-width:640px;width:100%;border:1px solid var(--gold-light);}
+  .section-label{font-size:14px;font-weight:900;color:var(--red-dark);margin:0 0 10px;display:flex;align-items:center;gap:6px;}
+  .level-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:20px;}
+  .level-card{border:3px solid transparent;background:#FBF6EA;border-radius:16px;padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:transform .12s ease,border-color .12s ease,background .12s ease;}
+  .level-card:hover{transform:translateY(-2px);}
+  .level-card.selected{border-color:var(--jade);background:#EAF7F0;}
+  .level-card .emojis{font-size:clamp(20px,5vw,26px);line-height:1;min-width:80px;text-align:center;}
+  .level-card .lv-text{flex:1;}
+  .level-card .lv-name{font-weight:900;font-size:clamp(13px,3.2vw,16px);color:var(--ink);}
+  .level-card .lv-desc{font-size:clamp(11px,2.6vw,12px);color:var(--ink-soft);margin-top:2px;}
+  .level-card .lv-badge{font-size:11px;font-weight:900;color:#fff;background:var(--gold);border-radius:999px;padding:3px 9px;white-space:nowrap;}
+  .btn{font-family:'Noto Sans TC',sans-serif;font-weight:900;border:none;border-radius:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:transform .08s ease,filter .12s ease;}
+  .btn:active{transform:translateY(2px);}
+  .btn-primary{background:var(--red);color:#fff;box-shadow:0 5px 0 var(--red-dark);font-size:18px;padding:14px 20px;width:100%;}
+  .btn-secondary{background:#F0EBDD;color:var(--ink);box-shadow:0 4px 0 #D9CFB4;font-size:14px;padding:11px 16px;}
+  #gameScreen{padding:0;justify-content:flex-start;}
+  #hud{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 14px;flex:0 0 auto;}
+  .hud-pill{background:#fff;border-radius:999px;padding:6px 12px;font-weight:900;font-size:clamp(12px,3vw,14px);box-shadow:0 3px 0 rgba(43,36,32,0.08);display:flex;align-items:center;gap:6px;white-space:nowrap;border:1px solid var(--gold-light);}
+  .icon-btn{background:#fff;border:none;border-radius:12px;width:34px;height:34px;font-size:16px;box-shadow:0 3px 0 rgba(43,36,32,0.08);cursor:pointer;}
+  #timerBarWrap{width:100%;padding:0 14px;flex:0 0 auto;}
+  #timerBarTrack{width:100%;height:10px;background:#EADFC4;border-radius:999px;overflow:hidden;}
+  #timerBarFill{height:100%;width:100%;background:linear-gradient(90deg,var(--jade),var(--gold));border-radius:999px;transition:width .1s linear,background .3s ease;}
+  #timerBarFill.urgent{background:linear-gradient(90deg,var(--red),#FF9A6B);}
+  #questionArea{flex:1 1 auto;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:10px 16px 16px;overflow-y:auto;}
+  #questionCard{background:var(--card);border-radius:22px;width:100%;max-width:520px;padding:22px 18px 18px;text-align:center;box-shadow:0 10px 0 rgba(43,36,32,0.05),0 16px 30px rgba(43,36,32,0.12);border:1px solid var(--gold-light);position:relative;margin-top:6px;}
+  #qNumBadge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;font-weight:900;font-size:12px;padding:5px 14px;border-radius:999px;box-shadow:0 3px 0 var(--red-dark);white-space:nowrap;}
+  #emojiDisplay{font-size:clamp(44px,13vw,70px);line-height:1.25;margin:14px 0 6px;letter-spacing:4px;}
+  #promptText{font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:4px;}
+  #hintBox{margin-top:8px;background:var(--paper-deep);border-radius:12px;padding:0 12px;max-height:0;overflow:hidden;opacity:0;transition:max-height .35s ease,opacity .35s ease,padding .35s ease;font-size:13px;color:var(--ink-soft);font-weight:700;text-align:left;}
+  #hintBox.show{max-height:120px;opacity:1;padding:10px 12px;}
+  #hintBox b{color:var(--red-dark);}
+  #optionsWrap{width:100%;max-width:520px;display:flex;flex-direction:column;gap:10px;margin-top:14px;}
+  .option-btn{background:#fff;border:3px solid #EADFC4;border-radius:16px;padding:14px 16px;font-size:clamp(15px,4.4vw,19px);font-weight:900;color:var(--ink);cursor:pointer;text-align:center;transition:transform .1s ease,border-color .15s ease,background .15s ease;}
+  .option-btn:active{transform:translateY(2px);}
+  .option-btn.correct{border-color:var(--jade);background:#EAF7F0;color:var(--jade-dark);animation:pulseGood .4s ease;}
+  .option-btn.wrong{border-color:var(--red);background:#FCEAE8;color:var(--red-dark);animation:shake .4s ease;}
+  .option-btn.disabled{pointer-events:none;opacity:0.75;}
+  @keyframes pulseGood{0%{transform:scale(1);}50%{transform:scale(1.04);}100%{transform:scale(1);}}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+  #feedbackFlash{margin-top:12px;font-weight:900;font-size:clamp(14px,4vw,17px);padding:6px 16px;border-radius:999px;background:#fff;box-shadow:0 4px 0 rgba(43,36,32,0.08);opacity:0;transform:translateY(6px);transition:opacity .15s ease,transform .15s ease;display:inline-block;}
+  #feedbackFlash.show{opacity:1;transform:translateY(0);}
+  #feedbackFlash.good{color:var(--jade-dark);}#feedbackFlash.bad{color:var(--red-dark);}#feedbackFlash.timeup{color:var(--gold);}
+  #endScreen .panel{text-align:center;}
+  #resultEmoji{font-size:52px;margin-bottom:6px;}
+  #resultScore{font-size:clamp(28px,8vw,42px);font-weight:900;color:var(--red);margin:4px 0;}
+  #resultSub{color:var(--ink-soft);font-weight:800;margin-bottom:18px;font-size:14px;}
+  .end-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+  @media(max-width:480px){.level-card{padding:10px;} #hud{padding:8px 10px;}}
+</style>
+</head>
+<body>
+<nav id="top-nav">
+  <a class="nav-logo" href="index.html">🎮 翻翻樂</a>
+  <a class="nav-link" href="index.html">首頁</a>
+  <a class="nav-link" href="animal.html">英文</a>
+  <a class="nav-link" href="math.html">數學</a>
+  <a class="nav-link" href="campaign.html">🏆闖關</a>
+  <a class="nav-link" href="magic.html">🧙魔法</a>
+  <a class="nav-link active" href="idiom.html">📜成語</a>
+  <a class="nav-link" href="wordcatcher.html">🎯捕手</a>
+</nav>
+<div id="app">
+  <div class="corner-seal tl"></div>
+  <div class="corner-seal br"></div>
+  <div id="startScreen" class="screen">
+    <div class="title-wrap">
+      <h1 class="brush">看圖猜成語</h1>
+      <div class="subtitle">看一看小圖案，猜猜是哪一句成語！</div>
+    </div>
+    <div class="panel">
+      <p class="section-label">📜 選擇難度</p>
+      <div class="level-grid" id="levelGrid"></div>
+      <button class="btn btn-primary" id="startBtn">▶ 開始遊戲</button>
+    </div>
+  </div>
+  <div id="gameScreen" class="screen" hidden>
+    <div id="hud">
+      <div class="hud-pill">📖 <span id="levelNameVal">-</span></div>
+      <div class="hud-pill">⭐ <span id="scoreVal">0</span></div>
+      <div class="hud-right"><button class="icon-btn" id="quitBtn">✖</button></div>
+    </div>
+    <div id="timerBarWrap"><div id="timerBarTrack"><div id="timerBarFill"></div></div></div>
+    <div id="questionArea">
+      <div id="questionCard">
+        <div id="qNumBadge">第 1 / 30 題</div>
+        <div id="promptText">這句成語是什麼呢？</div>
+        <div id="emojiDisplay">🪨🐦🐦</div>
+        <div id="hintBox"><b>💡 意思提示：</b><span id="hintText"></span></div>
+        <div id="feedbackFlash"></div>
+      </div>
+      <div id="optionsWrap"></div>
+    </div>
+  </div>
+  <div id="endScreen" class="screen" hidden>
+    <div class="panel">
+      <div id="resultEmoji">🏆</div>
+      <div id="resultScore">0 / 30</div>
+      <div id="resultSub">答對率</div>
+      <div class="end-btns">
+        <button class="btn btn-primary" id="retryBtn" style="width:auto;">🔁 再玩一次</button>
+        <button class="btn btn-secondary" id="changeLevelBtn">📜 更換難度</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  "use strict";
+  const LEVELS={1:{name:"初級",desc:"常見成語，圖案簡單好猜",idioms:[{idiom:"一石二鳥",emoji:"🪨🐦🐦",hint:"做一件事，同時達成兩個目的。"},{idiom:"畫蛇添足",emoji:"🐍✏️🦶",hint:"多此一舉，反而把事情弄糟。"},{idiom:"守株待兔",emoji:"🌳🐇⏳",hint:"死守著一次的好運氣，不知道要變通。"},{idiom:"狐假虎威",emoji:"🦊👑🐯",hint:"借用別人的勢力來嚇唬別人。"},{idiom:"井底之蛙",emoji:"🐸🕳️",hint:"形容見識淺薄、眼光狹小的人。"},{idiom:"亡羊補牢",emoji:"🐑🏚️🔧",hint:"出了差錯以後，想辦法補救還來得及。"},{idiom:"對牛彈琴",emoji:"🐮🎻",hint:"對不懂道理的人講道理，白費力氣。"},{idiom:"掩耳盜鈴",emoji:"👂🚫🔔",hint:"自己欺騙自己，以為別人不知道。"},{idiom:"拔苗助長",emoji:"🌱⬆️✋",hint:"違反自然規律，急著求成反而壞事。"},{idiom:"塞翁失馬",emoji:"🐴❓🍀",hint:"一時的壞事，說不定會變成好事。"},{idiom:"畫龍點睛",emoji:"🐉👁️✨",hint:"在關鍵的地方加上一筆，讓整體更生動。"},{idiom:"三心二意",emoji:"3️⃣❤️2️⃣💭",hint:"猶豫不決，沒辦法專心做一件事。"},{idiom:"半途而廢",emoji:"🏃🛑",hint:"事情做到一半就放棄了。"},{idiom:"名列前茅",emoji:"📛🥇",hint:"成績或名次排在很前面。"},{idiom:"手忙腳亂",emoji:"✋💨🦶💨",hint:"做事情慌慌張張、毫無條理。"},{idiom:"七上八下",emoji:"7️⃣⬆️8️⃣⬇️",hint:"形容心裡緊張、忐忑不安。"},{idiom:"五顏六色",emoji:"🎨🌈",hint:"顏色非常多，五彩繽紛。"},{idiom:"一馬當先",emoji:"🐴1️⃣🚩",hint:"走在最前面，帶頭去做一件事。"},{idiom:"十全十美",emoji:"🔟💯",hint:"非常完美，沒有任何缺點。"},{idiom:"四面八方",emoji:"🧭🔄",hint:"形容每一個方向都有。"},{idiom:"見異思遷",emoji:"👀🔄💭",hint:"看到別的事物就改變原本的心意。"},{idiom:"東張西望",emoji:"👀↔️",hint:"四處張望，注意力不集中。"},{idiom:"呆若木雞",emoji:"🐔🪵",hint:"被嚇呆了，像木頭雕的雞一樣不動。"},{idiom:"狼吞虎嚥",emoji:"🐺🍖😋",hint:"吃東西吃得又快又急躁。"},{idiom:"龍飛鳳舞",emoji:"🐉✍️🦚",hint:"形容字寫得很好看、很有氣勢。"},{idiom:"畫餅充飢",emoji:"🍞🖼️😋",hint:"用空想安慰自己，並沒有實際的幫助。"},{idiom:"杯弓蛇影",emoji:"🍷🏹🐍",hint:"疑神疑鬼，自己嚇自己。"},{idiom:"對症下藥",emoji:"🎯💊",hint:"針對問題，找到正確的解決方法。"},{idiom:"打草驚蛇",emoji:"🌾👊🐍",hint:"做事不夠謹慎，讓對方提高警覺。"},{idiom:"自相矛盾",emoji:"🛡️⚔️",hint:"自己說的話前後衝突，互相矛盾。"}]},2:{name:"中級",desc:"進階成語，需要多想一下",idioms:[{idiom:"井井有條",emoji:"📚➡️➡️",hint:"形容做事整整齊齊、很有秩序。"},{idiom:"胸有成竹",emoji:"🎍❤️",hint:"做事之前，心裡已經有完整的計畫。"},{idiom:"專心致志",emoji:"🎯🧠",hint:"全神貫注地做一件事情。"},{idiom:"精益求精",emoji:"⬆️⬆️✨",hint:"已經做得很好了，還要求更加完美。"},{idiom:"循序漸進",emoji:"🔢➡️",hint:"按照順序，一步一步慢慢前進。"},{idiom:"學以致用",emoji:"📖🔧",hint:"把學到的知識，用在生活或工作中。"},{idiom:"溫故知新",emoji:"🔁📖💡",hint:"複習舊的知識，能得到新的理解。"},{idiom:"熟能生巧",emoji:"🔁🎯",hint:"反覆練習，就能做得又快又好。"},{idiom:"眾志成城",emoji:"👥🏰",hint:"大家同心協力，力量就能很強大。"},{idiom:"同心協力",emoji:"🤝❤️",hint:"大家一起努力、互相配合。"},{idiom:"力爭上游",emoji:"💪⬆️",hint:"努力奮鬥，追求更好的表現。"},{idiom:"精疲力竭",emoji:"😩🔋",hint:"非常疲累，一點力氣都沒有了。"},{idiom:"愛不釋手",emoji:"❤️✋📦",hint:"非常喜歡，捨不得放下。"},{idiom:"恍然大悟",emoji:"💡😲",hint:"突然明白了原本不懂的道理。"},{idiom:"恰到好處",emoji:"🎯👌",hint:"做得剛剛好，不多也不少。"},{idiom:"千辛萬苦",emoji:"⛰️😓",hint:"經歷了非常多的困難與辛苦。"},{idiom:"全神貫注",emoji:"🎯👁️",hint:"非常專心，注意力完全集中。"},{idiom:"廢寢忘食",emoji:"😴❌🍚",hint:"非常投入，忘記了睡覺和吃飯。"},{idiom:"一舉兩得",emoji:"1️⃣✋🎁🎁",hint:"做一件事，同時獲得兩種好處。"},{idiom:"助人為樂",emoji:"🤝😊",hint:"幫助別人，會讓自己感到快樂。"},{idiom:"見義勇為",emoji:"🦸👀",hint:"看到正義的事，就勇敢去做。"},{idiom:"持之以恆",emoji:"⏳💪",hint:"堅持不懈，長久地努力下去。"},{idiom:"腳踏實地",emoji:"🦶🌍",hint:"做事務實，不投機取巧。"},{idiom:"不恥下問",emoji:"❓🙇",hint:"不因為向地位較低的人請教而感到羞恥。"},{idiom:"集思廣益",emoji:"👥💡",hint:"集合大家的想法，得到更好的結果。"},{idiom:"各抒己見",emoji:"👥🗣️",hint:"每個人都說出自己的看法。"},{idiom:"三令五申",emoji:"📢🔁",hint:"再三命令、反覆告誡。"},{idiom:"自強不息",emoji:"💪🔥",hint:"不斷努力向上，永不鬆懈。"},{idiom:"精雕細琢",emoji:"🔨💎",hint:"做事非常仔細、講究每一個細節。"},{idiom:"舉一反三",emoji:"1️⃣➡️3️⃣",hint:"從一件事情，類推知道其他相似的事。"}]},3:{name:"高級",desc:"挑戰成語，考驗理解力",idioms:[{idiom:"未雨綢繆",emoji:"☔🔧",hint:"在事情發生之前，就先做好準備。"},{idiom:"望梅止渴",emoji:"🌳🍑💧",hint:"用想像來安慰自己，解決不了實際的需求。"},{idiom:"刻舟求劍",emoji:"🚣🔪",hint:"不知道變通，用舊的方法找新的答案。"},{idiom:"買櫝還珠",emoji:"📦💎",hint:"重視外表，卻忽略了真正珍貴的東西。"},{idiom:"邯鄲學步",emoji:"🚶🔄",hint:"盲目模仿別人，反而失去了自己原本的樣子。"},{idiom:"鷸蚌相爭",emoji:"🐦🦪🎣",hint:"兩方互相爭鬥，讓第三者得到好處。"},{idiom:"杞人憂天",emoji:"😟☁️",hint:"為了不必要的事情而擔心。"},{idiom:"完璧歸趙",emoji:"💎↩️",hint:"把借來的東西完整無缺地歸還原主。"},{idiom:"破釜沉舟",emoji:"🍲💥⛵",hint:"下定決心，不留任何退路。"},{idiom:"臥薪嘗膽",emoji:"🛏️🌿😖",hint:"忍受艱苦的環境，努力發憤圖強。"},{idiom:"東施效顰",emoji:"👩🎭",hint:"盲目模仿別人，反而顯得更不好看。"},{idiom:"千載難逢",emoji:"⏳🌟",hint:"形容非常難得的機會。"},{idiom:"錦上添花",emoji:"🌸➕🎁",hint:"在原本已經很好的事物上，增添更多美好。"},{idiom:"雪中送炭",emoji:"❄️🔥🎁",hint:"在別人最需要幫助的時候，給予幫助。"},{idiom:"水滴石穿",emoji:"💧🪨",hint:"力量雖小，只要持續下去就能完成目標。"},{idiom:"一諾千金",emoji:"🤝💰",hint:"答應別人的事一定會做到，非常守信用。"},{idiom:"名副其實",emoji:"🏷️✅",hint:"名聲和實際情況完全相符。"},{idiom:"不可思議",emoji:"❓😲",hint:"讓人無法用常理理解，非常驚訝。"},{idiom:"出類拔萃",emoji:"🌟🆙",hint:"能力遠超過一般人，非常優秀。"},{idiom:"鍥而不捨",emoji:"⛏️💪",hint:"堅持不放棄，一直努力下去。"},{idiom:"引人入勝",emoji:"🧲👀",hint:"內容很吸引人，讓人不由自主地投入。"},{idiom:"一絲不苟",emoji:"🧵🔍",hint:"做事非常認真仔細，一點都不馬虎。"},{idiom:"畫地為牢",emoji:"⭕🔒",hint:"自己限制自己的行動範圍。"},{idiom:"曲高和寡",emoji:"🎵🙅",hint:"格調太高，能理解或欣賞的人很少。"},{idiom:"空中樓閣",emoji:"☁️🏰",hint:"不切實際、無法實現的想法。"},{idiom:"標新立異",emoji:"🆕🎭",hint:"提出新奇獨特的看法，與眾不同。"},{idiom:"相輔相成",emoji:"🤝➕",hint:"兩者互相配合，讓彼此更加完整。"},{idiom:"深思熟慮",emoji:"🧠🔍",hint:"經過仔細周到的思考。"},{idiom:"舉世聞名",emoji:"🌍📢",hint:"全世界的人都知道，非常有名。"},{idiom:"見多識廣",emoji:"👀📚",hint:"見過的、知道的事情很多，經驗豐富。"}]}};
+  const QUESTION_TIME=15000,HINT_AT=10000;
+  let selectedLevel=1,levelData,questions=[],currentIndex=0,score=0;
+  let qTimerId=null,questionStart=0,hintShown=false,answered=false,lastSecTick=null;
+  let audioCtx=null;
+  const $=id=>document.getElementById(id);
+  const startScreen=$("startScreen"),gameScreen=$("gameScreen"),endScreen=$("endScreen");
+  const levelGrid=$("levelGrid"),startBtn=$("startBtn");
+  const levelNameVal=$("levelNameVal"),scoreVal=$("scoreVal"),quitBtn=$("quitBtn");
+  const timerBarFill=$("timerBarFill");
+  const qNumBadge=$("qNumBadge"),emojiDisplay=$("emojiDisplay"),hintBox=$("hintBox"),hintText=$("hintText"),feedbackFlash=$("feedbackFlash"),optionsWrap=$("optionsWrap");
+  const resultEmoji=$("resultEmoji"),resultScore=$("resultScore"),resultSub=$("resultSub");
+  const retryBtn=$("retryBtn"),changeLevelBtn=$("changeLevelBtn");
+  function shuffle(arr){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+  function buildLevelCards(){levelGrid.innerHTML="";Object.keys(LEVELS).forEach(key=>{const lv=LEVELS[key];const sample=lv.idioms.slice(0,2).map(i=>i.emoji).join("  ");const card=document.createElement("div");card.className="level-card"+(Number(key)===selectedLevel?" selected":"");card.dataset.level=key;card.innerHTML=`<div class="emojis">${sample}</div><div class="lv-text"><div class="lv-name">Lv.${key} ${lv.name}</div><div class="lv-desc">${lv.desc}</div></div><div class="lv-badge">30 題</div>`;card.addEventListener("click",()=>{selectedLevel=Number(key);[...levelGrid.children].forEach(c=>c.classList.remove("selected"));card.classList.add("selected");});levelGrid.appendChild(card);});}
+  buildLevelCards();
+  function ensureAudio(){if(!audioCtx){const AC=window.AudioContext||window.webkitAudioContext;if(AC)audioCtx=new AC();}if(audioCtx&&audioCtx.state==="suspended")audioCtx.resume();}
+  function playTone(type){if(!audioCtx)return;const now=audioCtx.currentTime;if(type==="correct"){[523,659,784].forEach((f,i)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.type="sine";const t=now+i*0.09;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.22,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+0.3);o.start(t);o.stop(t+0.32);});}else if(type==="wrong"){const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.type="sawtooth";o.frequency.setValueAtTime(220,now);o.frequency.exponentialRampToValueAtTime(90,now+0.28);g.gain.setValueAtTime(0.0001,now);g.gain.exponentialRampToValueAtTime(0.2,now+0.02);g.gain.exponentialRampToValueAtTime(0.0001,now+0.32);o.start(now);o.stop(now+0.34);}else if(type==="tick"){const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.type="square";o.frequency.setValueAtTime(880,now);g.gain.setValueAtTime(0.0001,now);g.gain.exponentialRampToValueAtTime(0.06,now+0.01);g.gain.exponentialRampToValueAtTime(0.0001,now+0.09);o.start(now);o.stop(now+0.1);}else if(type==="end"){[523,659,784,1047].forEach((f,i)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.type="sine";const t=now+i*0.14;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.22,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+0.3);o.start(t);o.stop(t+0.32);});}}
+  function buildQuestions(idioms){const seq=shuffle(idioms);const usage=new Map(idioms.map(i=>[i.idiom,0]));return seq.map((correct,idx)=>{const nearFuture=new Set(seq.slice(idx+1,idx+4).map(i=>i.idiom));let candidates=idioms.filter(i=>i.idiom!==correct.idiom&&!nearFuture.has(i.idiom));if(candidates.length<2)candidates=idioms.filter(i=>i.idiom!==correct.idiom);candidates=shuffle(candidates).sort((a,b)=>usage.get(a.idiom)-usage.get(b.idiom));const distractors=candidates.slice(0,2);distractors.forEach(d=>usage.set(d.idiom,usage.get(d.idiom)+1));const options=shuffle([correct,...distractors]);return{correct,options};});}
+  function startGame(){ensureAudio();levelData=LEVELS[selectedLevel];questions=buildQuestions(levelData.idioms);currentIndex=0;score=0;startScreen.hidden=true;endScreen.hidden=true;gameScreen.hidden=false;levelNameVal.textContent="Lv."+selectedLevel+" "+levelData.name;scoreVal.textContent=0;loadQuestion();}
+  function loadQuestion(){const q=questions[currentIndex];answered=false;hintShown=false;lastSecTick=null;qNumBadge.textContent="第"+(currentIndex+1)+" / "+questions.length+" 題";emojiDisplay.textContent=q.correct.emoji;hintText.textContent=q.correct.hint;hintBox.classList.remove("show");feedbackFlash.classList.remove("show","good","bad","timeup");feedbackFlash.textContent="";timerBarFill.classList.remove("urgent");timerBarFill.style.width="100%";optionsWrap.innerHTML="";q.options.forEach(opt=>{const btn=document.createElement("button");btn.className="option-btn";btn.textContent=opt.idiom;btn.addEventListener("click",()=>selectAnswer(opt.idiom,btn));optionsWrap.appendChild(btn);});startQTimer();}
+  function startQTimer(){clearInterval(qTimerId);questionStart=performance.now();qTimerId=setInterval(()=>{const elapsed=performance.now()-questionStart;const remaining=Math.max(0,QUESTION_TIME-elapsed);timerBarFill.style.width=(remaining/QUESTION_TIME*100)+"%";const secLeft=Math.ceil(remaining/1000);if(secLeft<=5&&secLeft!==lastSecTick&&secLeft>0){lastSecTick=secLeft;playTone("tick");timerBarFill.classList.add("urgent");}if(!hintShown&&elapsed>=HINT_AT){hintShown=true;hintBox.classList.add("show");}if(remaining<=0){clearInterval(qTimerId);if(!answered)handleTimeout();}},100);}
+  function highlightCorrect(){const q=questions[currentIndex];[...optionsWrap.children].forEach(btn=>{btn.classList.add("disabled");if(btn.textContent===q.correct.idiom)btn.classList.add("correct");});}
+  function selectAnswer(idiomText,btnEl){if(answered)return;answered=true;clearInterval(qTimerId);const q=questions[currentIndex];const isCorrect=idiomText===q.correct.idiom;[...optionsWrap.children].forEach(b=>b.classList.add("disabled"));if(isCorrect){btnEl.classList.add("correct");score++;scoreVal.textContent=score;feedbackFlash.textContent="✅ 答對了！";feedbackFlash.classList.add("show","good");playTone("correct");}else{btnEl.classList.add("wrong");highlightCorrect();feedbackFlash.textContent="❌ 答錯了！";feedbackFlash.classList.add("show","bad");playTone("wrong");}if(!hintShown){hintShown=true;hintBox.classList.add("show");}setTimeout(nextQuestion,1500);}
+  function handleTimeout(){answered=true;highlightCorrect();feedbackFlash.textContent="⏰ 時間到！";feedbackFlash.classList.add("show","timeup");if(!hintShown){hintShown=true;hintBox.classList.add("show");}playTone("wrong");setTimeout(nextQuestion,1600);}
+  function nextQuestion(){currentIndex++;if(currentIndex>=questions.length)endGame();else loadQuestion();}
+  function endGame(){clearInterval(qTimerId);playTone("end");gameScreen.hidden=true;endScreen.hidden=false;resultScore.textContent=score+" / "+questions.length;const rate=questions.length>0?Math.round((score/questions.length)*100):0;resultSub.textContent="答對率 "+rate+"%";resultEmoji.textContent=rate>=80?"🏆":rate>=50?"🎉":"💪";}
+  startBtn.addEventListener("click",startGame);
+  retryBtn.addEventListener("click",startGame);
+  changeLevelBtn.addEventListener("click",()=>{endScreen.hidden=true;gameScreen.hidden=true;startScreen.hidden=false;});
+  quitBtn.addEventListener("click",endGame);
+  document.body.addEventListener("click",ensureAudio,{once:true});
+  document.body.addEventListener("touchstart",ensureAudio,{once:true});
+})();
+</script>
+</body>
+</html>
