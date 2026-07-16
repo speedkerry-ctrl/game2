@@ -14,7 +14,7 @@
     touch-action: manipulation;
   }
   #game-wrapper {
-    position: relative;
+    position: fixed; top: 50px; left: 0; right: 0; bottom: 0; height: auto;
     width: 100%;
     height: 100%;
     max-width: 900px;
@@ -217,9 +217,26 @@
     #word-input { font-size: 17px; }
     #cast-btn { font-size: 15px; padding: 10px 14px; }
   }
+
+  #magic-timer-toggle:checked + span { background: #f9ca24; }
+  #magic-timer-toggle:checked + span span { transform: translateX(20px); }
 </style>
+<link rel="stylesheet" href="shared.css">
 </head>
 <body>
+<nav class="g-nav">
+  <a class="g-nav__logo" href="index.html">🎮 翻翻樂</a>
+  <div class="g-nav__links">
+    <a class="g-nav__link" href="index.html">🏠 首頁</a>
+    <a class="g-nav__link" href="animal.html">🐾 英文</a>
+    <a class="g-nav__link" href="math.html">🔢 數學</a>
+    <a class="g-nav__link" href="typing.html">⌨️ 打字</a>
+    <a class="g-nav__link" href="campaign.html">🏆 闖關</a>
+    <a class="g-nav__link active" href="magic.html">🧙 魔法</a>
+    <a class="g-nav__link" href="idiom.html">📜 成語</a>
+    <a class="g-nav__link" href="wordcatcher.html">🎯 捕手</a>
+  </div>
+</nav>
 
 <div id="game-wrapper">
 
@@ -227,6 +244,20 @@
     <div id="level-label">關卡 1 / 10</div>
     <div id="timer-box">10</div>
     <button id="restart-btn">🔄 重來</button>
+
+<div id="magic-timer-wrap" style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.15);border:1.5px solid rgba(249,202,36,0.4);border-radius:12px;padding:11px 16px;margin-bottom:12px;">
+  <div>
+    <div style="font-size:13px;font-weight:700;color:#4a2e00;">⏱ 限時關卡</div>
+    <div style="font-size:11px;color:#7a5a20;margin-top:2px;">關閉後第4、9關不再有倒數限制</div>
+  </div>
+  <label style="position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0;">
+    <input type="checkbox" id="magic-timer-toggle" checked style="opacity:0;width:0;height:0;">
+    <span style="position:absolute;cursor:pointer;inset:0;background:#ccc;border-radius:24px;transition:.3s;">
+      <span style="position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s;box-shadow:0 1px 3px rgba(0,0,0,.2);"></span>
+    </span>
+  </label>
+</div>
+
   </div>
 
   <div id="scene">
@@ -518,7 +549,7 @@ function loadLevel(index) {
   wordInput.value = '';
   document.querySelectorAll('.summon-item').forEach(el => el.remove());
 
-  if (lvl.timeLimit) {
+  if (lvl.timeLimit && (document.getElementById("magic-timer-toggle")?.checked !== false)) {
     timeLeft = lvl.timeLimit;
     timerBox.classList.add('show');
     countdownWrap.classList.add('show');

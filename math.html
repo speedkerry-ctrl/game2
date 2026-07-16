@@ -10,10 +10,10 @@ html,body{height:100%;}
 body{font-family:system-ui,-apple-system,sans-serif;background:#f8f8f6;min-height:100vh;min-height:100dvh;}
 
 nav{background:#fff;border-bottom:1px solid #eee;padding:0 1.25rem;display:flex;align-items:center;height:52px;gap:10px;position:sticky;top:0;z-index:50;}
-.nav-logo{font-size:15px;font-weight:700;color:#1a1a1a;text-decoration:none;white-space:nowrap;}
-.nav-links{display:flex;gap:4px;margin-left:auto;}
-.nav-link{font-size:13px;padding:6px 10px;border-radius:7px;color:#666;text-decoration:none;}
-.nav-link.active{background:#1a1a1a;color:#fff;}
+
+
+
+
 
 /* 外框：手機/平板填滿螢幕 */
 .container{
@@ -137,18 +137,27 @@ nav{background:#fff;border-bottom:1px solid #eee;padding:0 1.25rem;display:flex;
 .confetti-wrap{position:relative;height:0;overflow:visible;pointer-events:none;}
 .dot{position:absolute;width:8px;height:8px;border-radius:50%;animation:fall 1.3s ease forwards;}
 @keyframes fall{0%{transform:translateY(0) rotate(0);opacity:1;}100%{transform:translateY(180px) rotate(720deg);opacity:0;}}
+
+  #timer-toggle:checked + span { background: #185FA5; }
+  #timer-toggle:checked + span span { transform: translateX(20px); }
 </style>
+<link rel="stylesheet" href="shared.css">
 </head>
 <body>
-<nav>
-  <a class="nav-logo" href="index.html">🎮 翻翻樂</a>
-  <div class="nav-links">
-    <a class="nav-link" href="index.html">首頁</a>
-    <a class="nav-link" href="animal.html">英文</a>
-    <a class="nav-link active" href="math.html">數學</a>
-    <a class="nav-link" href="typing.html">打字</a>
+<nav class="g-nav">
+  <a class="g-nav__logo" href="index.html">🎮 翻翻樂</a>
+  <div class="g-nav__links">
+    <a class="g-nav__link" href="index.html">🏠 首頁</a>
+    <a class="g-nav__link" href="animal.html">🐾 英文</a>
+    <a class="g-nav__link active" href="math.html">🔢 數學</a>
+    <a class="g-nav__link" href="typing.html">⌨️ 打字</a>
+    <a class="g-nav__link" href="campaign.html">🏆 闖關</a>
+    <a class="g-nav__link" href="magic.html">🧙 魔法</a>
+    <a class="g-nav__link" href="idiom.html">📜 成語</a>
+    <a class="g-nav__link" href="wordcatcher.html">🎯 捕手</a>
   </div>
 </nav>
+
 <div class="container">
 
 <div class="screen active" id="screen-menu">
@@ -180,7 +189,21 @@ nav{background:#fff;border-bottom:1px solid #eee;padding:0 1.25rem;display:flex;
     <div class="mode-btn sel" data-mode="single" onclick="selMode(this)"><div class="mode-icon">👤</div><div class="mode-name">單人挑戰</div><div class="mode-desc">連擊獎勵 + 星星</div></div>
     <div class="mode-btn" data-mode="multi" onclick="selMode(this)"><div class="mode-icon">👥</div><div class="mode-name">雙人對戰</div><div class="mode-desc">輪流翻，比分數</div></div>
   </div>
-  <button class="start-btn" onclick="startGame()">開始遊戲</button>
+  
+  <div class="g-section-label" style="margin-top:1rem;">⏱ 計時模式</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid #e5e5e5;border-radius:10px;padding:12px 16px;margin-bottom:1rem;">
+    <div>
+      <div style="font-size:13px;font-weight:700;color:#1a1a1a;">開啟計時</div>
+      <div style="font-size:11px;color:#888;margin-top:2px;">關閉則無時間限制自由挑戰</div>
+    </div>
+    <label style="position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0;">
+      <input type="checkbox" id="timer-toggle" checked style="opacity:0;width:0;height:0;">
+      <span style="position:absolute;cursor:pointer;inset:0;background:#ccc;border-radius:24px;transition:.3s;">
+        <span style="position:absolute;content:'';height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s;box-shadow:0 1px 3px rgba(0,0,0,.2);"></span>
+      </span>
+    </label>
+  </div>
+<button class="start-btn" onclick="startGame()">開始遊戲</button>
 </div>
 
 <div class="screen" id="screen-game">
@@ -379,6 +402,7 @@ function genPairs(count){
 }
 
 function restartGame(){
+  const timerEnabled = document.getElementById("timer-toggle")?.checked !== false;
   speechSynthesis.cancel();
   COLS=selSizeVal;
   PAIRS=selSizeVal===4?8:selSizeVal===6?18:32;
@@ -530,6 +554,13 @@ function showResult(){
         <div class="win-title">全部消除！</div>
         <div class="win-sub">翻了 ${tries} 次・正確率 ${acc}%</div>
         <div class="win-btn-row"><button onclick="goMenu()">← 選單</button><button onclick="restartGame()">再玩一局</button></div>
+
+      <div class="g-result__divider" style="margin:10px 0;font-size:11px;color:#bbb;position:relative;text-align:center;">或</div>
+      <div style="display:flex;gap:8px;">
+        <button class="g-btn g-btn--ghost" style="flex:1;font-size:13px;padding:9px;" onclick="location.href='index.html'">🏠 回首頁</button>
+        <button class="g-btn g-btn--ghost" style="flex:1;font-size:13px;padding:9px;" onclick="history.back()">← 返回</button>
+      </div>
+<div class="g-result-extra"></div>
       </div>`;
   }else{
     const tie=scores[0]===scores[1],wtext=tie?'平手！':'🏆 '+(scores[0]>scores[1]?'P1':'P2')+' 獲勝！';

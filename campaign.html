@@ -8,10 +8,10 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;font-family:system-ui,-apple-system,sans-serif;background:#f8f8f6;}
 nav{background:#fff;border-bottom:1px solid #eee;padding:0 1.25rem;display:flex;align-items:center;height:50px;gap:10px;position:sticky;top:0;z-index:100;}
-.nav-logo{font-size:15px;font-weight:700;color:#1a1a1a;text-decoration:none;white-space:nowrap;}
-.nav-links{display:flex;gap:4px;margin-left:auto;}
-.nav-link{font-size:12px;padding:5px 9px;border-radius:7px;color:#666;text-decoration:none;}
-.nav-link.active{background:#1a1a1a;color:#fff;}
+
+
+
+
 .container{width:100%;max-width:860px;margin:0 auto;padding:1rem 1rem 2rem;}
 @media(min-width:600px){.container{padding:1.25rem 2rem 2.5rem;}}
 .screen{display:none;}.screen.active{display:block;}
@@ -161,22 +161,27 @@ nav{background:#fff;border-bottom:1px solid #eee;padding:0 1.25rem;display:flex;
 @keyframes fall{0%{transform:translateY(0) rotate(0);opacity:1;}100%{transform:translateY(160px) rotate(720deg);opacity:0;}}
 .btn-row{display:flex;gap:8px;margin-top:8px;}
 .btn-row button{flex:1;padding:9px;font-size:12px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer;font-weight:500;}
+
+  #camp-timer-toggle:not(:checked) + #camp-toggle-track { background: #ccc; }
+  #camp-timer-toggle:not(:checked) + #camp-toggle-track #camp-toggle-thumb { transform: translateX(-20px); }
 </style>
+<link rel="stylesheet" href="shared.css">
 </head>
 <body>
-<nav>
-  <a class="nav-logo" href="index.html">🎮 翻翻樂</a>
-  <div class="nav-links">
-    <a class="nav-link" href="index.html">首頁</a>
-    <a class="nav-link" href="animal.html">英文</a>
-    <a class="nav-link" href="math.html">數學</a>
-    <a class="nav-link" href="typing.html">打字</a>
-    <a class="nav-link active" href="campaign.html">🏆闖關</a>
-    <a class="nav-link" href="magic.html">🧙魔法</a>
-    <a class="nav-link" href="idiom.html">📜成語</a>
-    <a class="nav-link" href="wordcatcher.html">🎯捕手</a>
+<nav class="g-nav">
+  <a class="g-nav__logo" href="index.html">🎮 翻翻樂</a>
+  <div class="g-nav__links">
+    <a class="g-nav__link" href="index.html">🏠 首頁</a>
+    <a class="g-nav__link" href="animal.html">🐾 英文</a>
+    <a class="g-nav__link" href="math.html">🔢 數學</a>
+    <a class="g-nav__link" href="typing.html">⌨️ 打字</a>
+    <a class="g-nav__link active" href="campaign.html">🏆 闖關</a>
+    <a class="g-nav__link" href="magic.html">🧙 魔法</a>
+    <a class="g-nav__link" href="idiom.html">📜 成語</a>
+    <a class="g-nav__link" href="wordcatcher.html">🎯 捕手</a>
   </div>
 </nav>
+
 <div class="container">
 
 <!-- 登入 -->
@@ -273,6 +278,13 @@ nav{background:#fff;border-bottom:1px solid #eee;padding:0 1.25rem;display:flex;
       <button onclick="goStageSelect()">關卡選擇</button>
       <button class="btn-primary" id="r-next-btn" onclick="nextStage()">下一關 →</button>
     </div>
+
+      <div class="g-result__divider" style="margin:10px 0;font-size:11px;color:#bbb;position:relative;text-align:center;">或</div>
+      <div style="display:flex;gap:8px;">
+        <button class="g-btn g-btn--ghost" style="flex:1;font-size:13px;padding:9px;" onclick="location.href='index.html'">🏠 回首頁</button>
+        <button class="g-btn g-btn--ghost" style="flex:1;font-size:13px;padding:9px;" onclick="history.back()">← 返回</button>
+      </div>
+<div class="g-result-extra"></div>
   </div>
 </div>
 
@@ -547,6 +559,9 @@ function startStage(si){
   else initType(cfg);
   startTimer();
   show('screen-game');
+  const campTimerOn = document.getElementById("camp-timer-toggle")?.checked !== false;
+  const timerWrap = document.getElementById("timer-bar")?.closest(".timer-wrap");
+  if(timerWrap) timerWrap.style.display = campTimerOn ? "" : "none";
 }
 
 function restartStage(){startStage(curStageIdx);}
@@ -560,6 +575,7 @@ function nextStage(){
 
 // ── 計時 ──
 function startTimer(){
+  if(!(document.getElementById("camp-timer-toggle")?.checked!==false)) return;
   stopTimer();updateTimerUI();
   timerInt=setInterval(()=>{
     if(slowMode&&Math.random()<0.5)return;
