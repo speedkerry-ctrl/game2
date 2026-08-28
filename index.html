@@ -1,251 +1,210 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>國小中文發音大挑戰</title>
-    <style>
-        * { box-sizing: border-box; }
-        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background-color: #1a1a2e; color: #ffffff; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; overflow: hidden; }
-        .phone-canvas { background: linear-gradient(to bottom, #11998e, #38ef7d); width: 100%; max-width: 430px; height: 92vh; border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); position: relative; display: flex; flex-direction: column; overflow: hidden; }
-        
-        /* 頂部 HUD (包含跳關) */
-        .top-hud { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; font-size: 1.1rem; font-weight: bold; background: rgba(0, 0, 0, 0.3); z-index: 10; }
-        .skip-box { display: flex; align-items: center; gap: 4px; }
-        .input-level { width: 45px; text-align: center; border-radius: 6px; border: 1px solid #ccc; padding: 2px 0; font-weight: bold; color: #333; }
-        .btn-skip { background: #ffcc00; color: #1a1a2e; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
-        
-        .speech-subtitle { position: absolute; top: 75px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.75); padding: 8px 16px; border-radius: 20px; font-size: 0.95rem; max-width: 85%; text-align: center; border: 1px solid #38ef7d; color: #38ef7d; z-index: 10; }
-        .stage-3d { flex: 1; position: relative; perspective: 300px; }
-        .runway { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%) rotateX(45deg); transform-origin: bottom center; width: 180px; height: 85%; background: #2a2a40; border-left: 6px solid #38ef7d; border-right: 6px solid #38ef7d; }
-        .runway::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 2px; height: 100%; border-left: 4px dashed #ffffff; }
-        .finish-barrier { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); width: 240px; height: 6px; background: #38ef7d; box-shadow: 0 0 10px #38ef7d; z-index: 2; }
-        
-        .challenge-card { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 5; will-change: transform, opacity; }
-        .card-emoji { font-size: 5rem; }
-        .card-word-box { background: #ffffff; color: #333; padding: 10px 24px; border-radius: 16px; border: 3px solid #38ef7d; box-shadow: 0 6px 0 #11998e; margin-top: 5px; text-align: center; display: flex; flex-direction: column; align-items: center; min-width: 160px; }
-        .card-zh { font-size: 2.2rem; font-weight: bold; color: #1a1a2e; line-height: 1.1; white-space: nowrap; }
-        .card-bpmf { font-size: 1rem; color: #666; font-weight: 500; margin-top: 4px; }
-        
-        .card-approach { animation: cardRush 7s linear forwards; }
-        .card-fallback { transition: transform 0.4s ease-in, opacity 0.4s; transform: translateX(-50%) scale(0.1) translateY(-320px) !important; opacity: 0.3; }
-        
-        .bottom-area { padding: 20px; text-align: center; background: rgba(0,0,0,0.4); z-index: 10; }
-        .btn-start { background-color: #38ef7d; color: #1a1a2e; font-size: 1.4rem; font-weight: bold; border: none; padding: 12px 35px; border-radius: 25px; cursor: pointer; box-shadow: 0 0 15px rgba(56,239,125,0.4); }
-        .btn-start.active { background-color: #ff4757; color: white; box-shadow: 0 0 15px rgba(255,71,87,0.4); }
-        
-        @keyframes cardRush {
-            0% { transform: translateX(-50%) scale(0.1) translateY(-300px); opacity: 0; }
-            10% { opacity: 1; }
-            100% { transform: translateX(-50%) scale(1.1) translateY(-10px); opacity: 1; }
-        }
-    </style>
-    <!-- 引入外部資料庫 zh-words.js -->
-    <script src="zh-words.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>翻翻樂遊戲中心</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f8f8f6;min-height:100vh;}
+
+nav{background:#fff;border-bottom:1px solid #eee;padding:0 1.5rem;display:flex;align-items:center;height:52px;gap:1rem;}
+.nav-logo{font-size:16px;font-weight:600;color:#1a1a1a;text-decoration:none;}
+.nav-links{display:flex;gap:6px;margin-left:auto;}
+.nav-link{font-size:13px;padding:6px 14px;border-radius:8px;color:#666;text-decoration:none;transition:all .15s;}
+.nav-link:hover{background:#f0f0ee;color:#1a1a1a;}
+.nav-link.active{background:#1a1a1a;color:#fff;}
+
+.hero{text-align:center;padding:4rem 1.5rem 2rem;}
+.hero-title{font-size:36px;font-weight:700;color:#1a1a1a;margin-bottom:10px;}
+.hero-sub{font-size:16px;color:#666;max-width:540px;margin:0 auto;}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;max-width:800px;margin:0 auto;padding:0 1.5rem 2rem;}
+
+.game-card{background:#fff;border:1px solid #eee;border-radius:16px;padding:2rem;text-decoration:none;display:block;transition:all .2s;position:relative;overflow:hidden;}
+.game-card:hover{border-color:#ccc;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.06);}
+.game-card-emoji{font-size:40px;margin-bottom:1rem;display:block;}
+.game-card-title{font-size:20px;font-weight:700;color:#1a1a1a;margin-bottom:6px;}
+.game-card-desc{font-size:14px;color:#666;line-height:1.6;margin-bottom:1.25rem;}
+.tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.25rem;}
+.tag{font-size:11px;padding:4px 10px;border-radius:999px;font-weight:500;}
+.tag-blue{background:#E6F1FB;color:#0C447C;}
+.tag-green{background:#EAF3DE;color:#27500A;}
+.tag-purple{background:#EEEDFE;color:#3C3489;}
+.play-btn{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:#185FA5;text-decoration:none;}
+.play-btn::after{content:'→';transition:transform .15s;}
+.game-card:hover .play-btn::after{transform:translateX(4px);}
+
+.accent-blue{border-top:3px solid #378ADD;}
+.accent-green{border-top:3px solid #1D9E75;}
+.accent-amber{border-top:3px solid #EF9F27;}
+.accent-red{border-top:3px solid #E24B4A;}
+.accent-magic{border-top:3px solid #8B5CF6;}
+.accent-teal{border-top:3px solid #0EA5E9;}
+.accent-sky{border-top:3px solid #06B6D4;}
+.accent-emerald{border-top:3px solid #10B981;}
+.accent-indigo{border-top:3px solid #6366F1;}
+
+.tag-teal{background:#E0F9F5;color:#0E7490;}
+.tag-sky{background:#E0F2FE;color:#0369A1;}
+.tag-magic{background:#EDE9FE;color:#4C1D95;}
+.tag-red{background:#FCEBEB;color:#A32D2D;}
+.tag-amber{background:#FAEEDA;color:#633806;}
+.tag-emerald{background:#D1FAE5;color:#065F46;}
+.tag-indigo{background:#E0E7FF;color:#3730A3;}
+
+footer{text-align:center;padding:2rem;font-size:13px;color:#aaa;border-top:1px solid #eee;background:#fff;}
+</style>
 </head>
 <body>
-    <div class="phone-canvas">
-        <div class="top-hud">
-            <span id="level-num">Level: 1 / 100</span>
-            <div class="skip-box">
-                <input type="number" id="jump-input" class="input-level" min="1" max="100" value="1">
-                <button class="btn-skip" onclick="jumpToLevel()">Skip</button>
-            </div>
-            <span id="score-num">Score: 0</span>
-        </div>
-        <div id="subtitle" class="speech-subtitle">點擊 START 開始中文朗讀挑戰！</div>
-        <div class="stage-3d">
-            <div class="runway"></div>
-            <div class="finish-barrier"></div>
-            <div id="challenge-card" class="challenge-card">
-                <div id="emoji" class="card-emoji">🍎</div>
-                <div class="card-word-box">
-                    <div id="word-zh" class="card-zh">蘋果</div>
-                    <div id="word-bpmf" class="card-bpmf">ㄆㄧㄥˊ ㄍㄨㄛˇ</div>
-                </div>
-            </div>
-        </div>
-        <div class="bottom-area">
-            <button id="action-btn" class="btn-start" onclick="toggleGame()">START</button>
-        </div>
+
+<nav>
+  <a class="nav-logo" href="index.html">🎮 翻翻樂</a>
+  <div class="nav-links">
+    <a class="nav-link active" href="index.html">首頁</a>
+    <a class="nav-link" href="animal.html">英文遊戲</a>
+    <a class="nav-link" href="math.html">數學遊戲</a>
+    <a class="nav-link" href="typing.html">打字練習</a>
+    <a class="nav-link" href="english-speech.html">英文發音</a>
+    <a class="nav-link" href="chinese.html">中文發音</a>
+    <a class="nav-link" href="campaign.html">🏆 闖關</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-title">翻翻樂遊戲中心</div>
+  <div class="hero-sub">翻牌配對學英文、練數學、中文打字、中英文語音發音朗讀，還有文字魔法解謎大冒險！</div>
+</div>
+
+<div class="cards">
+  <!-- 英中翻翻樂 -->
+  <a class="game-card accent-blue" href="animal.html">
+    <span class="game-card-emoji">🐾</span>
+    <div class="game-card-title">英中翻翻樂</div>
+    <div class="game-card-desc">翻開配對圖案，翻牌同步唸出英文+中文發音。50+ 詞彙涵蓋動物、食物、交通、自然、運動、太空。</div>
+    <div class="tag-row">
+      <span class="tag tag-blue">6×6</span>
+      <span class="tag tag-blue">8×8</span>
+      <span class="tag tag-purple">單人 / 雙人</span>
     </div>
+    <span class="play-btn">開始遊戲</span>
+  </a>
 
-    <script>
-        // 若 zh-words.js 載入失敗的預備資料
-        const defaultWords = [
-            { word: "蘋果", bpmf: "ㄆㄧㄥˊ ㄍㄨㄛˇ", emoji: "🍎" },
-            { word: "香蕉", bpmf: "ㄒㄧㄤ ㄐㄧㄠ", emoji: "🍌" },
-            { word: "貓咪", bpmf: "ㄇㄠ ㄇㄧ", emoji: "🐱" }
-        ];
+  <!-- 英文發音挑戰 -->
+  <a class="game-card accent-indigo" href="english-speech.html">
+    <span class="game-card-emoji">🎙️</span>
+    <div class="game-card-title">英文發音口語大挑戰</div>
+    <div class="game-card-desc">開啟麥克風練習英文口語！大聲唸出卡片上的英文單字與日常短語，挑戰 50 關口語跑道關卡！</div>
+    <div class="tag-row">
+      <span class="tag tag-indigo">英文語音辨識</span>
+      <span class="tag tag-indigo">50 關單字短語</span>
+      <span class="tag tag-purple">自由跳關</span>
+    </div>
+    <span class="play-btn">開始發音挑戰</span>
+  </a>
 
-        const wordList = (typeof zhWords !== 'undefined') ? zhWords : defaultWords;
-        
-        let currentIdx = 0, score = 0, isPlaying = false, recognition = null, audioCtx = null;
-        
-        const actionBtn = document.getElementById('action-btn'),
-              subtitleTxt = document.getElementById('subtitle'),
-              wordZhTxt = document.getElementById('word-zh'),
-              wordBpmfTxt = document.getElementById('word-bpmf'),
-              emojiTxt = document.getElementById('emoji'),
-              levelTxt = document.getElementById('level-num'),
-              scoreTxt = document.getElementById('score-num'),
-              challengeCard = document.getElementById('challenge-card'),
-              jumpInput = document.getElementById('jump-input');
-        
-        challengeCard.onanimationend = function() { if (isPlaying) handleWrongAnswer(); };
-        
-        function playSound(type) {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            if (type === 'correct') {
-                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
-                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.25);
-            } else {
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(220, audioCtx.currentTime);
-                osc.frequency.setValueAtTime(146, audioCtx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-            }
-        }
-        
-        function initSpeechEngine() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                subtitleTxt.innerText = '瀏覽器不支援語音辨識，請使用 Chrome！';
-                return false;
-            }
-            recognition = new SpeechRecognition();
-            recognition.lang = 'zh-TW';
-            recognition.interimResults = false;
-            recognition.continuous = false;
-            
-            recognition.onstart = function() {
-                if (isPlaying) subtitleTxt.innerText = '🎤 正在聆聽... 請唸出：「' + wordList[currentIdx].word + '」';
-            };
-            
-            recognition.onresult = function(event) {
-                if (!isPlaying) return;
-                let userSpeech = event.results[0][0].transcript;
-                if (userSpeech) {
-                    subtitleTxt.innerText = '🗣️ 聽到：「' + userSpeech + '」';
-                    let target = wordList[currentIdx].word;
-                    if (userSpeech.includes(target) || target.includes(userSpeech)) {
-                        handleCorrectAnswer();
-                    }
-                }
-            };
-            
-            recognition.onend = function() {
-                if (isPlaying) {
-                    setTimeout(function() { try { recognition.start(); } catch(e) {} }, 50);
-                }
-            };
-            return true;
-        }
-        
-        function toggleGame() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (!recognition && !initSpeechEngine()) return;
-            
-            if (isPlaying) {
-                isPlaying = false;
-                actionBtn.innerText = 'START';
-                actionBtn.classList.remove('active');
-                subtitleTxt.innerText = '遊戲已暫停';
-                challengeCard.classList.remove('card-approach');
-                recognition.stop();
-            } else {
-                isPlaying = true;
-                actionBtn.innerText = 'LISTENING...';
-                actionBtn.classList.add('active');
-                scoreTxt.innerText = 'Score: ' + score;
-                updateCardUI();
-                try { recognition.start(); } catch(e) {}
-            }
-        }
-        
-        function handleCorrectAnswer() {
-            playSound('correct');
-            score += 10;
-            scoreTxt.innerText = 'Score: ' + score;
-            subtitleTxt.innerText = '🎉 發音正確！過關！';
-            challengeCard.classList.remove('card-approach');
-            isPlaying = false;
-            if (recognition) recognition.stop();
-            
-            setTimeout(function() {
-                currentIdx++;
-                if (currentIdx < wordList.length) {
-                    isPlaying = true;
-                    updateCardUI();
-                    try { recognition.start(); } catch(e) {}
-                } else {
-                    displayVictory();
-                }
-            }, 1200);
-        }
-        
-        function handleWrongAnswer() {
-            playSound('wrong');
-            subtitleTxt.innerText = '❌ 時間到/沒聽清，退回重新挑戰！';
-            isPlaying = false;
-            if (recognition) recognition.stop();
-            challengeCard.classList.remove('card-approach');
-            challengeCard.classList.add('card-fallback');
-            
-            setTimeout(function() {
-                challengeCard.classList.remove('card-fallback');
-                isPlaying = true;
-                updateCardUI();
-                try { recognition.start(); } catch(e) {}
-            }, 400);
-        }
-        
-        /* 核心跳關邏輯 */
-        function jumpToLevel() {
-            let targetLevel = parseInt(jumpInput.value);
-            if (isNaN(targetLevel) || targetLevel < 1 || targetLevel > wordList.length) return;
-            
-            currentIdx = targetLevel - 1;
-            subtitleTxt.innerText = '⏭️ 已跳至第 ' + targetLevel + ' 關';
-            challengeCard.classList.remove('card-approach');
-            if (recognition) recognition.stop();
-            
-            updateCardUI();
-            if (isPlaying) {
-                try { recognition.start(); } catch(e) {}
-            }
-        }
-        
-        function updateCardUI() {
-            levelTxt.innerText = 'Level: ' + (currentIdx + 1) + ' / ' + wordList.length;
-            jumpInput.value = currentIdx + 1;
-            jumpInput.max = wordList.length;
-            
-            wordZhTxt.innerText = wordList[currentIdx].word;
-            wordBpmfTxt.innerText = wordList[currentIdx].bpmf || '';
-            emojiTxt.innerText = wordList[currentIdx].emoji || '📖';
-            
-            challengeCard.classList.remove('card-approach');
-            void challengeCard.offsetWidth; // 觸發重繪以重設動畫
-            if (isPlaying) challengeCard.classList.add('card-approach');
-        }
-        
-        function displayVictory() {
-            isPlaying = false;
-            if (recognition) recognition.stop();
-            emojiTxt.innerText = '🏆';
-            wordZhTxt.innerText = '挑戰成功！';
-            wordBpmfTxt.innerText = '';
-            subtitleTxt.innerText = '🔥 太棒了！你完成了全部 ' + wordList.length + ' 關！';
-            actionBtn.style.display = 'none';
-        }
-        
-        setTimeout(updateCardUI, 200);
-    </script>
+  <!-- 中文發音字卡大挑戰（統整入口） -->
+  <a class="game-card accent-emerald" href="chinese.html">
+    <span class="game-card-emoji">🎤</span>
+    <div class="game-card-title">國小中文發音百題大挑戰</div>
+    <div class="game-card-desc">使用麥克風大聲朗讀字卡上的中文！包含小一至小三 100 題詞彙與成語，搭配注音輔助、3D 跑道效果與跳關功能。</div>
+    <div class="tag-row">
+      <span class="tag tag-emerald">語音辨識</span>
+      <span class="tag tag-emerald">注音輔助</span>
+      <span class="tag tag-emerald">100 題極限</span>
+      <span class="tag tag-purple">自由跳關</span>
+    </div>
+    <span class="play-btn">開始朗讀</span>
+  </a>
+
+  <!-- 數學翻翻樂 -->
+  <a class="game-card accent-green" href="math.html">
+    <span class="game-card-emoji">🔢</span>
+    <div class="game-card-title">數學翻翻樂</div>
+    <div class="game-card-desc">翻開算式牌，找到對應的答案牌消除！加法、減法、乘法，或全部混合，難度自選。</div>
+    <div class="tag-row">
+      <span class="tag tag-green">4×4</span>
+      <span class="tag tag-green">6×6</span>
+      <span class="tag tag-purple">單人 / 雙人</span>
+    </div>
+    <span class="play-btn">開始遊戲</span>
+  </a>
+
+  <!-- 中文打字練習 -->
+  <a class="game-card accent-amber" href="typing.html">
+    <span class="game-card-emoji">⌨️</span>
+    <div class="game-card-title">中文打字練習</div>
+    <div class="game-card-desc">看圖打出正確的中文字！從小學二年級到成語挑戰，共五個難度，還能自訂題庫。</div>
+    <div class="tag-row">
+      <span class="tag tag-amber">5種難度</span>
+      <span class="tag tag-amber">成語挑戰</span>
+      <span class="tag tag-purple">自訂題庫</span>
+    </div>
+    <span class="play-btn">開始遊戲</span>
+  </a>
+</div>
+
+<!-- 闖關模式 -->
+<div style="max-width:800px;margin:0 auto 2rem;padding:0 1.5rem;">
+  <a class="game-card accent-red" href="campaign.html" style="display:block;background:linear-gradient(135deg,#fff 0%,#FFF5F5 100%);text-decoration:none;">
+    <span class="game-card-emoji">🏆</span>
+    <div class="game-card-title">闖關模式 <span style="font-size:13px;font-weight:400;color:#888;margin-left:6px;">全新！</span></div>
+    <div class="game-card-desc">6 個年級 × 每級 10 關，翻牌、數學、打字三種挑戰輪番上陣，限時闖關！內建提示、加時、慢速等拯救機制，通關獲得星星評分。</div>
+    <div class="tag-row">
+      <span class="tag tag-red">6 年級</span>
+      <span class="tag tag-red">60 關</span>
+      <span class="tag tag-amber">限時挑戰</span>
+      <span class="tag tag-purple">提示 / 加時道具</span>
+    </div>
+    <span class="play-btn">開始闖關</span>
+  </a>
+</div>
+
+<!-- 文字魔法解謎 -->
+<div style="max-width:800px;margin:0 auto 2rem;padding:0 1.5rem;">
+  <a class="game-card accent-magic" href="magic.html" style="display:block;background:linear-gradient(135deg,#fff 0%,#F5F3FF 100%);text-decoration:none;">
+    <span class="game-card-emoji">🧙</span>
+    <div class="game-card-title">文字魔法解謎大冒險 <span style="font-size:13px;font-weight:400;color:#888;margin-left:6px;">新遊戲！</span></div>
+    <div class="game-card-desc">輸入正確的魔法咒語來克服重重障礙！橋、水、炸彈... 只要你想得到的都可以試試，10 個充滿驚喜的關卡等著你！</div>
+    <div class="tag-row">
+      <span class="tag tag-magic">10 關解謎</span>
+      <span class="tag tag-magic">創意輸入</span>
+      <span class="tag tag-amber">限時挑戰關</span>
+      <span class="tag tag-purple">Web Audio 音效</span>
+    </div>
+    <span class="play-btn">開始冒險</span>
+  </a>
+</div>
+
+<!-- 底部遊戲群 -->
+<div style="max-width:800px;margin:0 auto 0;padding:0 1.5rem;">
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:2rem;">
+    <a class="game-card accent-teal" href="idiom.html" style="display:block;text-decoration:none;">
+      <span class="game-card-emoji">📜</span>
+      <div class="game-card-title">看圖猜成語</div>
+      <div class="game-card-desc">看表情符號組成的圖案，猜出正確成語！3 種難度，90 題成語，限時 15 秒作答，超時自動顯示提示。</div>
+      <div class="tag-row">
+        <span class="tag tag-teal">初/中/高 三級</span>
+        <span class="tag tag-teal">90 題成語</span>
+        <span class="tag tag-purple">限時 15 秒</span>
+      </div>
+      <span class="play-btn">開始猜成語</span>
+    </a>
+    <a class="game-card accent-sky" href="wordcatcher.html" style="display:block;text-decoration:none;">
+      <span class="game-card-emoji">🎯</span>
+      <div class="game-card-title">英文單字捕手</div>
+      <div class="game-card-desc">聽英文發音，移動網子接住對應的圖案！圖案從左飛到右，考驗反應力與英文聽力，60 秒計時挑戰。</div>
+      <div class="tag-row">
+        <span class="tag tag-sky">初/中/高 三速</span>
+        <span class="tag tag-sky">45 個單字</span>
+        <span class="tag tag-amber">60 秒計時</span>
+      </div>
+      <span class="play-btn">開始捕單字</span>
+    </a>
+  </div>
+</div>
+
+<footer>翻翻樂遊戲中心 · 開源免費 · 歡迎分享</footer>
+
 </body>
 </html>
