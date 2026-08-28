@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Pronunciation Challenge</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1a1a2e; color: #ffffff; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; overflow: hidden; }
+        .phone-canvas { background: linear-gradient(to bottom, #4a00e0, #8e2de2); width: 100%; max-width: 430px; height: 92vh; border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); position: relative; display: flex; flex-direction: column; overflow: hidden; }
+        .top-hud { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; font-size: 1.1rem; font-weight: bold; background: rgba(0, 0, 0, 0.3); z-index: 10; }
+        .skip-box { display: flex; align-items: center; gap: 4px; }
+        .input-level { width: 45px; text-align: center; border-radius: 6px; border: 1px solid #ccc; padding: 2px 0; font-weight: bold; color: #333; }
+        .btn-skip { background: #ffcc00; color: #1a1a2e; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
+        .speech-subtitle { position: absolute; top: 75px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.75); padding: 8px 16px; border-radius: 20px; font-size: 0.95rem; max-width: 85%; text-align: center; border: 1px solid #00d2ff; color: #00d2ff; z-index: 10; }
+        .stage-3d { flex: 1; position: relative; perspective: 300px; }
+        .runway { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%) rotateX(45deg); transform-origin: bottom center; width: 180px; height: 85%; background: #2a2a40; border-left: 6px solid #00d2ff; border-right: 6px solid #00d2ff; }
+        .runway::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 2px; height: 100%; border-left: 4px dashed #ffffff; }
+        .finish-barrier { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); width: 240px; height: 6px; background: #00d2ff; box-shadow: 0 0 10px #00d2ff; z-index: 2; }
+        .challenge-card { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 5; will-change: transform, opacity; }
+        .card-emoji { font-size: 5rem; }
+        .card-word-box { background: #ffffff; color: #333; padding: 10px 24px; border-radius: 16px; border: 3px solid #00d2ff; box-shadow: 0 6px 0 #0099cc; margin-top: 5px; text-align: center; display: flex; flex-direction: column; align-items: center; min-width: 160px; }
+        .card-en { font-size: 2.2rem; font-weight: bold; color: #2b579a; line-height: 1.1; white-space: nowrap; }
+        .card-zh { font-size: 1rem; color: #666; font-weight: 500; margin-top: 4px; }
+        .card-approach { animation: cardRush 7s linear forwards; }
+        .card-fallback { transition: transform 0.4s ease-in, opacity 0.4s; transform: translateX(-50%) scale(0.1) translateY(-320px) !important; opacity: 0.3; }
+        .bottom-area { padding: 20px; text-align: center; background: rgba(0,0,0,0.4); z-index: 10; }
+        .btn-start { background-color: #00d2ff; color: #1a1a2e; font-size: 1.4rem; font-weight: bold; border: none; padding: 12px 35px; border-radius: 25px; cursor: pointer; box-shadow: 0 0 15px rgba(0,210,255,0.4); }
+        .btn-start.active { background-color: #ff4757; color: white; box-shadow: 0 0 15px rgba(255,71,87,0.4); }
+        @keyframes cardRush {
+            0% { transform: translateX(-50%) scale(0.1) translateY(-300px); opacity: 0; }
+            10% { opacity: 1; }
+            100% { transform: translateX(-50%) scale(1.1) translateY(-10px); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-canvas">
+        <div class="top-hud">
+            <span id="level-num">Level: 1 / 50</span>
+            <div class="skip-box">
+                <input type="number" id="jump-input" class="input-level" min="1" max="50" value="1">
+                <button class="btn-skip" onclick="jumpToLevel()">Skip</button>
+            </div>
+            <span id="score-num">Score: 0</span>
+        </div>
+        <div id="subtitle" class="speech-subtitle">Click START to practice English speaking!</div>
+        <div class="stage-3d">
+            <div class="runway"></div>
+            <div class="finish-barrier"></div>
+            <div id="challenge-card" class="challenge-card">
+                <div id="emoji" class="card-emoji">🍎</div>
+                <div class="card-word-box">
+                    <div id="word-en" class="card-en">Apple</div>
+                    <div id="word-zh" class="card-zh">蘋果</div>
+                </div>
+            </div>
+        </div>
+        <div class="bottom-area">
+            <button id="action-btn" class="btn-start" onclick="toggleGame()">START</button>
+        </div>
+    </div>
+    <script>
+        const englishWords = [
+            { word: "Apple", zh: "蘋果", emoji: "🍎" }, { word: "Banana", zh: "香蕉", emoji: "🍌" },
+            { word: "Cat", zh: "貓咪", emoji: "🐱" }, { word: "Dog", zh: "小狗", emoji: "🐶" },
+            { word: "Elephant", zh: "大象", emoji: "🐘" }, { word: "Flower", zh: "花朵", emoji: "🌸" },
+            { word: "Giraffe", zh: "長頸鹿", emoji: "🦒" }, { word: "House", zh: "房子", emoji: "🏠" },
+            { word: "Ice cream", zh: "冰淇淋", emoji: "🍦" }, { word: "Jellyfish", zh: "水母", emoji: "🪼" },
+            { word: "Kangaroo", zh: "袋鼠", emoji: "🦘" }, { word: "Lion", zh: "獅子", emoji: "🦁" },
+            { word: "Monkey", zh: "猴子", emoji: "🐒" }, { word: "Notebook", zh: "筆記本", emoji: "📓" },
+            { word: "Orange", zh: "柳橙", emoji: "🍊" }, { word: "Panda", zh: "貓熊", emoji: "🐼" },
+            { word: "Queen", zh: "女王", emoji: "👑" }, { word: "Rainbow", zh: "彩虹", emoji: "🌈" },
+            { word: "Sun", zh: "太陽", emoji: "☀️" }, { word: "Tiger", zh: "老虎", emoji: "🐯" },
+            { word: "Umbrella", zh: "雨傘", emoji: "☂️" }, { word: "Volcano", zh: "火山", emoji: "🌋" },
+            { word: "Watermelon", zh: "西瓜", emoji: "🍉" }, { word: "Yellow", zh: "黃色", emoji: "💛" },
+            { word: "Zebra", zh: "斑馬", emoji: "🦓" }, { word: "Butterfly", zh: "蝴蝶", emoji: "🦋" },
+            { word: "Dolphin", zh: "海豚", emoji: "🐬" }, { word: "Astronaut", zh: "太空人", emoji: "👨‍🚀" },
+            { word: "Bicycle", zh: "腳踏車", emoji: "🚲" }, { word: "Dinosaur", zh: "恐龍", emoji: "🦖" },
+            { word: "Adventure", zh: "冒險", emoji: "🗺️" }, { word: "Beautiful", zh: "美麗的", emoji: "✨" },
+            { word: "Chocolate", zh: "巧克力", emoji: "🍫" }, { word: "Delicious", zh: "美味的", emoji: "😋" },
+            { word: "Energy", zh: "活力/能量", emoji: "⚡" }, { word: "Friendship", zh: "友誼", emoji: "🤝" },
+            { word: "Happiness", zh: "幸福", emoji: "😄" }, { word: "Knowledge", zh: "知識", emoji: "📚" },
+            { word: "Mountain", zh: "高山", emoji: "⛰️" }, { word: "Paradise", zh: "天堂/樂園", emoji: "🏝️" },
+            { word: "Good morning", zh: "早安", emoji: "🌅" }, { word: "Thank you", zh: "謝謝你", emoji: "🙏" },
+            { word: "Have a nice day", zh: "祝你有美好的一天", emoji: "😊" }, { word: "See you later", zh: "待會見", emoji: "👋" },
+            { word: "Best wishes", zh: "美好的祝願", emoji: "💌" }, { word: "Never give up", zh: "永不放棄", emoji: "💪" },
+            { word: "Dream big", zh: "放膽做夢", emoji: "🌟" }, { word: "Practice makes perfect", zh: "熟能生巧", emoji: "🎯" },
+            { word: "Knowledge is power", zh: "知識就是力量", emoji: "💡" }, { word: "Victory is ours", zh: "勝利屬於我們", emoji: "🏆" }
+        ];
+
+        let currentIdx = 0, score = 0, isPlaying = false, recognition = null, audioCtx = null;
+        const actionBtn = document.getElementById('action-btn'), subtitleTxt = document.getElementById('subtitle'), wordEnTxt = document.getElementById('word-en'), wordZhTxt = document.getElementById('word-zh'), emojiTxt = document.getElementById('emoji'), levelTxt = document.getElementById('level-num'), scoreTxt = document.getElementById('score-num'), challengeCard = document.getElementById('challenge-card'), jumpInput = document.getElementById('jump-input');
+        
+        challengeCard.onanimationend = function() { if (isPlaying) handleWrongAnswer(); };
+        
+        function playSound(type) { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); if (type === 'correct') { osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.25); } else { osc.type = 'triangle'; osc.frequency.setValueAtTime(220, audioCtx.currentTime); osc.frequency.setValueAtTime(146, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.3); } }
+        
+        function initSpeechEngine() { const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SpeechRecognition) { subtitleTxt.innerText = 'Browser does not support Speech Recognition. Try Chrome!'; return false; } recognition = new SpeechRecognition(); recognition.lang = 'en-US'; recognition.interimResults = false; recognition.continuous = false; recognition.onstart = function() { if (isPlaying) subtitleTxt.innerText = '🎤 Listening... Say "' + englishWords[currentIdx].word + '"!'; }; recognition.onresult = function(event) { if (!isPlaying) return; let userSpeech = event.results[0][0].transcript.toLowerCase(); if (userSpeech) { subtitleTxt.innerText = '🗣️ Heard: "' + userSpeech + '"'; let target = englishWords[currentIdx].word.toLowerCase(); if (userSpeech.includes(target) || target.includes(userSpeech)) { handleCorrectAnswer(); } } }; recognition.onend = function() { if (isPlaying) { setTimeout(function() { try { recognition.start(); } catch(e) {} }, 50); } }; recognition.onerror = function(event) { console.log('Engine Error:', event.error); }; return true; }
+        
+        function toggleGame() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (!recognition && !initSpeechEngine()) return; if (isPlaying) { isPlaying = false; actionBtn.innerText = 'START'; actionBtn.classList.remove('active'); subtitleTxt.innerText = 'Game Paused'; challengeCard.classList.remove('card-approach'); recognition.stop(); } else { isPlaying = true; actionBtn.innerText = 'LISTENING...'; actionBtn.classList.add('active'); scoreTxt.innerText = 'Score: ' + score; updateCardUI(); try { recognition.start(); } catch(e) {} } }
+        
+        function handleCorrectAnswer() { playSound('correct'); score += 10; scoreTxt.innerText = 'Score: ' + score; subtitleTxt.innerText = '🎉 Excellent pronunciation!'; challengeCard.classList.remove('card-approach'); isPlaying = false; if (recognition) recognition.stop(); setTimeout(function() { currentIdx++; if (currentIdx < englishWords.length) { isPlaying = true; updateCardUI(); try { recognition.start(); } catch(e) {} } else { displayVictory(); } }, 1200); }
+        
+        function handleWrongAnswer() { playSound('wrong'); subtitleTxt.innerText = '❌ Try again! Sliding back!'; isPlaying = false; if (recognition) recognition.stop(); challengeCard.classList.remove('card-approach'); challengeCard.classList.add('card-fallback'); setTimeout(function() { challengeCard.classList.remove('card-fallback'); isPlaying = true; updateCardUI(); try { recognition.start(); } catch(e) {} }, 400); }
+        
+        function jumpToLevel() { let targetLevel = parseInt(jumpInput.value); if (isNaN(targetLevel) || targetLevel < 1 || targetLevel > englishWords.length) return; currentIdx = targetLevel - 1; subtitleTxt.innerText = '⏭️ Jumped to Level ' + targetLevel; challengeCard.classList.remove('card-approach'); if (recognition) recognition.stop(); updateCardUI(); if (isPlaying) { try { recognition.start(); } catch(e) {} } }
+        
+        function updateCardUI() { levelTxt.innerText = 'Level: ' + (currentIdx + 1) + ' / ' + englishWords.length; jumpInput.value = currentIdx + 1; wordEnTxt.innerText = englishWords[currentIdx].word; wordZhTxt.innerText = englishWords[currentIdx].zh; emojiTxt.innerText = englishWords[currentIdx].emoji; challengeCard.classList.remove('card-approach'); void challengeCard.offsetWidth; if(isPlaying) challengeCard.classList.add('card-approach'); }
+        
+        function displayVictory() { isPlaying = false; if (recognition) recognition.stop(); emojiTxt.innerText = '🏆'; wordEnTxt.innerText = 'You Win!'; wordZhTxt.innerText = '挑戰成功！'; subtitleTxt.innerText = '🔥 Awesome! You completed all 50 levels!'; actionBtn.style.display = 'none'; }
+        
+        setTimeout(updateCardUI, 200);
+    </script>
+</body>
+</html>

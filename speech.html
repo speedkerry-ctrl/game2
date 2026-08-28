@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小一中文發音字卡大挑戰</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Microsoft JhengHei', sans-serif; background-color: #1a1a2e; color: #ffffff; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; overflow: hidden; }
+        .phone-canvas { background: linear-gradient(to bottom, #11998e, #38ef7d); width: 100%; max-width: 430px; height: 92vh; border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); position: relative; display: flex; flex-direction: column; overflow: hidden; }
+        .top-hud { display: flex; justify-content: space-between; padding: 20px; font-size: 1.2rem; font-weight: bold; background: rgba(0, 0, 0, 0.3); z-index: 10; }
+        .speech-subtitle { position: absolute; top: 75px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.7); padding: 8px 16px; border-radius: 20px; font-size: 1rem; max-width: 85%; text-align: center; border: 1px solid #38ef7d; color: #38ef7d; z-index: 10; }
+        .stage-3d { flex: 1; position: relative; perspective: 300px; }
+        .runway { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%) rotateX(45deg); transform-origin: bottom center; width: 180px; height: 85%; background: #3a3a52; border-left: 6px solid #ffcc00; border-right: 6px solid #ffcc00; }
+        .runway::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 2px; height: 100%; border-left: 4px dashed #ffffff; }
+        .finish-barrier { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); width: 240px; height: 6px; background: #38ef7d; box-shadow: 0 0 10px #38ef7d; z-index: 2; }
+        .challenge-card { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 5; will-change: transform, opacity; }
+        .card-emoji { font-size: 5rem; }
+        .card-word-box { background: #ffffff; color: #333; padding: 8px 24px; border-radius: 16px; border: 3px solid #ffcc00; box-shadow: 0 6px 0 #cc9900; margin-top: 5px; text-align: center; display: flex; flex-direction: column; align-items: center; min-width: 140px; }
+        .card-zh { font-size: 2.3rem; font-weight: bold; color: #2b579a; line-height: 1.1; }
+        .card-bopo { font-size: 1.1rem; color: #666; font-weight: bold; margin-top: 5px; letter-spacing: 1px; }
+        .card-approach { animation: cardRush 7s linear forwards; }
+        .card-fallback { transition: transform 0.4s ease-in, opacity 0.4s; transform: translateX(-50%) scale(0.1) translateY(-320px) !important; opacity: 0.3; }
+        .bottom-area { padding: 20px; text-align: center; background: rgba(0,0,0,0.4); z-index: 10; }
+        .btn-start { background-color: #38ef7d; color: #1a1a2e; font-size: 1.4rem; font-weight: bold; border: none; padding: 12px 35px; border-radius: 25px; cursor: pointer; box-shadow: 0 0 15px rgba(56,239,125,0.4); }
+        .btn-start.active { background-color: #ff4757; color: white; box-shadow: 0 0 15px rgba(255,71,87,0.4); }
+        @keyframes cardRush {
+            0% { transform: translateX(-50%) scale(0.1) translateY(-300px); opacity: 0; }
+            10% { opacity: 1; }
+            100% { transform: translateX(-50%) scale(1.1) translateY(-10px); opacity: 1; }
+        }
+    </style>
+    <!-- 引入外部中文注音字庫檔案 -->
+    <script src="zh-words.js"></script>
+</head>
+<body>
+    <div class="phone-canvas">
+        <div class="top-hud">
+            <span id="level-num">關卡: 1 / 30</span>
+            <span id="score-num">得分: 0 分</span>
+        </div>
+        <div id="subtitle" class="speech-subtitle">點擊下方按鈕開始中文挑戰！</div>
+        <div class="stage-3d">
+            <div class="runway"></div>
+            <div class="finish-barrier"></div>
+            <div id="challenge-card" class="challenge-card">
+                <div id="emoji" class="card-emoji">🍎</div>
+                <div class="card-word-box">
+                    <div id="word-zh" class="card-zh">蘋果</div>
+                    <div id="word-bopo" class="card-bopo">ㄆㄧㄥˊ ㄍㄨㄛˇ</div>
+                </div>
+            </div>
+        </div>
+        <div class="bottom-area">
+            <button id="action-btn" class="btn-start" onclick="toggleGame()">START 挑戰開始</button>
+        </div>
+    </div>
+    <script>
+        let currentIdx = 0, score = 0, isPlaying = false, recognition = null, audioCtx = null;
+        const actionBtn = document.getElementById('action-btn'), subtitleTxt = document.getElementById('subtitle'), wordZhTxt = document.getElementById('word-zh'), wordBopoTxt = document.getElementById('word-bopo'), emojiTxt = document.getElementById('emoji'), levelTxt = document.getElementById('level-num'), scoreTxt = document.getElementById('score-num'), challengeCard = document.getElementById('challenge-card');
+        
+        challengeCard.onanimationend = function() { if (isPlaying) handleWrongAnswer(); };
+        
+        function playSound(type) { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); if (type === 'correct') { osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.25); } else { osc.type = 'triangle'; osc.frequency.setValueAtTime(220, audioCtx.currentTime); osc.frequency.setValueAtTime(146, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.3); } }
+        
+        function initSpeechEngine() { const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SpeechRecognition) { subtitleTxt.innerText = '瀏覽器不支援語音辨識，請用 Chrome！'; return false; } recognition = new SpeechRecognition(); recognition.lang = 'zh-TW'; recognition.interimResults = false; recognition.continuous = false; recognition.onstart = function() { if (isPlaying) subtitleTxt.innerText = '🎤 正在聆聽，請大聲讀出「' + window.wordList[currentIdx].word + '」！'; }; recognition.onresult = function(event) { if (!isPlaying) return; let userSpeech = event.results[0][0].transcript; if (userSpeech) { subtitleTxt.innerText = '🗣️ 聽到聲音: "' + userSpeech + '"'; let target = window.wordList[currentIdx].word; if (userSpeech.includes(target) || target.includes(userSpeech)) { handleCorrectAnswer(); } } }; recognition.onend = function() { if (isPlaying) { setTimeout(function() { try { recognition.start(); } catch(e) {} }, 50); } }; recognition.onerror = function(event) { console.log('Engine Error:', event.error); }; return true; }
+        
+        function toggleGame() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (!recognition && !initSpeechEngine()) return; if (isPlaying) { isPlaying = false; actionBtn.innerText = 'START 挑戰開始'; actionBtn.classList.remove('active'); subtitleTxt.innerText = '遊戲已暫停'; challengeCard.classList.remove('card-approach'); recognition.stop(); } else { isPlaying = true; actionBtn.innerText = '錄音中... (點擊暫停)'; actionBtn.classList.add('active'); currentIdx = 0; score = 0; scoreTxt.innerText = '得分: 0 分'; updateCardUI(); try { recognition.start(); } catch(e) {} } }
+        
+        function handleCorrectAnswer() { playSound('correct'); score += 10; scoreTxt.innerText = '得分: ' + score + ' 分'; subtitleTxt.innerText = '🎉 太棒了！唸得非常正確！'; challengeCard.classList.remove('card-approach'); isPlaying = false; if (recognition) recognition.stop(); setTimeout(function() { currentIdx++; if (currentIdx < window.wordList.length) { isPlaying = true; updateCardUI(); try { recognition.start(); } catch(e) {} } else { displayVictory(); } }, 1200); }
+        
+        function handleWrongAnswer() { playSound('wrong'); subtitleTxt.innerText = '❌ 沒對喔！退回山頂重新出發！'; isPlaying = false; if (recognition) recognition.stop(); challengeCard.classList.remove('card-approach'); challengeCard.classList.add('card-fallback'); setTimeout(function() { challengeCard.classList.remove('card-fallback'); isPlaying = true; updateCardUI(); try { recognition.start(); } catch(e) {} }, 400); }
+        
+        function updateCardUI() { if(!window.wordList) return; levelTxt.innerText = '關卡: ' + (currentIdx + 1) + ' / ' + window.wordList.length; wordZhTxt.innerText = window.wordList[currentIdx].word; wordBopoTxt.innerText = window.wordList[currentIdx].bopo; emojiTxt.innerText = window.wordList[currentIdx].emoji; challengeCard.classList.remove('card-approach'); void challengeCard.offsetWidth; challengeCard.classList.add('card-approach'); }
+        
+        function displayVictory() { isPlaying = false; if (recognition) recognition.stop(); emojiTxt.innerText = '🏆'; wordZhTxt.innerText = '大功告成！'; wordBopoTxt.innerText = 'ㄍㄨㄥ ㄒㄧˇ ㄨㄢˊ ㄔˊ'; subtitleTxt.innerText = '🔥 太強了！你完成了 30 關中文朗讀挑戰！'; actionBtn.style.display = 'none'; }
+        
+        setTimeout(updateCardUI, 200);
+    </script>
+</body>
+</html>
