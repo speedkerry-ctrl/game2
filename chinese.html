@@ -8,50 +8,40 @@
         * { box-sizing: border-box; }
         body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background-color: #1a1a2e; color: #ffffff; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; overflow: hidden; }
         .phone-canvas { background: linear-gradient(to bottom, #11998e, #38ef7d); width: 100%; max-width: 430px; height: 92vh; border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); position: relative; display: flex; flex-direction: column; overflow: hidden; }
-        
-        /* 頂部 HUD (包含跳關) */
-        .top-hud { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; font-size: 1.1rem; font-weight: bold; background: rgba(0, 0, 0, 0.3); z-index: 10; }
+        .top-hud { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; font-size: 0.95rem; font-weight: bold; background: rgba(0, 0, 0, 0.3); z-index: 10; }
+        .btn-home { background: rgba(255, 255, 255, 0.2); color: #fff; border: 1px solid rgba(255,255,255,0.4); padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; text-decoration: none; display: flex; align-items: center; gap: 4px; }
+        .btn-home:hover { background: rgba(255, 255, 255, 0.4); }
         .skip-box { display: flex; align-items: center; gap: 4px; }
         .input-level { width: 45px; text-align: center; border-radius: 6px; border: 1px solid #ccc; padding: 2px 0; font-weight: bold; color: #333; }
         .btn-skip { background: #ffcc00; color: #1a1a2e; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
-        
-        .speech-subtitle { position: absolute; top: 75px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.75); padding: 8px 16px; border-radius: 20px; font-size: 0.95rem; max-width: 85%; text-align: center; border: 1px solid #38ef7d; color: #38ef7d; z-index: 10; }
+        .speech-subtitle { position: absolute; top: 65px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.75); padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; max-width: 90%; text-align: center; border: 1px solid #38ef7d; color: #38ef7d; z-index: 10; }
         .stage-3d { flex: 1; position: relative; perspective: 300px; }
         .runway { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%) rotateX(45deg); transform-origin: bottom center; width: 180px; height: 85%; background: #2a2a40; border-left: 6px solid #38ef7d; border-right: 6px solid #38ef7d; }
         .runway::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 2px; height: 100%; border-left: 4px dashed #ffffff; }
         .finish-barrier { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); width: 240px; height: 6px; background: #38ef7d; box-shadow: 0 0 10px #38ef7d; z-index: 2; }
-        
         .challenge-card { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 5; will-change: transform, opacity; }
-        .card-emoji { font-size: 5rem; }
-        .card-word-box { background: #ffffff; color: #333; padding: 10px 24px; border-radius: 16px; border: 3px solid #38ef7d; box-shadow: 0 6px 0 #11998e; margin-top: 5px; text-align: center; display: flex; flex-direction: column; align-items: center; min-width: 160px; }
-        .card-zh { font-size: 2.2rem; font-weight: bold; color: #1a1a2e; line-height: 1.1; white-space: nowrap; }
-        .card-bpmf { font-size: 1rem; color: #666; font-weight: 500; margin-top: 4px; }
-        
+        .card-emoji { font-size: 4.5rem; }
+        .card-word-box { background: #ffffff; color: #333; padding: 10px 20px; border-radius: 16px; border: 3px solid #38ef7d; box-shadow: 0 6px 0 #11998e; margin-top: 5px; text-align: center; display: flex; flex-direction: column; align-items: center; min-width: 170px; }
+        .card-zh { font-size: 2rem; font-weight: bold; color: #1a1a2e; line-height: 1.1; white-space: nowrap; }
+        .card-bpmf { font-size: 0.95rem; color: #666; font-weight: 500; margin-top: 4px; }
         .card-approach { animation: cardRush 7s linear forwards; }
         .card-fallback { transition: transform 0.4s ease-in, opacity 0.4s; transform: translateX(-50%) scale(0.1) translateY(-320px) !important; opacity: 0.3; }
-        
-        .bottom-area { padding: 20px; text-align: center; background: rgba(0,0,0,0.4); z-index: 10; }
-        .btn-start { background-color: #38ef7d; color: #1a1a2e; font-size: 1.4rem; font-weight: bold; border: none; padding: 12px 35px; border-radius: 25px; cursor: pointer; box-shadow: 0 0 15px rgba(56,239,125,0.4); }
+        .bottom-area { padding: 18px; text-align: center; background: rgba(0,0,0,0.4); z-index: 10; }
+        .btn-start { background-color: #38ef7d; color: #1a1a2e; font-size: 1.3rem; font-weight: bold; border: none; padding: 12px 35px; border-radius: 25px; cursor: pointer; box-shadow: 0 0 15px rgba(56,239,125,0.4); }
         .btn-start.active { background-color: #ff4757; color: white; box-shadow: 0 0 15px rgba(255,71,87,0.4); }
-        
-        @keyframes cardRush {
-            0% { transform: translateX(-50%) scale(0.1) translateY(-300px); opacity: 0; }
-            10% { opacity: 1; }
-            100% { transform: translateX(-50%) scale(1.1) translateY(-10px); opacity: 1; }
-        }
+        @keyframes cardRush { 0% { transform: translateX(-50%) scale(0.1) translateY(-300px); opacity: 0; } 10% { opacity: 1; } 100% { transform: translateX(-50%) scale(1.1) translateY(-10px); opacity: 1; } }
     </style>
-    <!-- 引入外部資料庫 zh-words.js -->
-    <script src="zh-words.js"></script>
 </head>
 <body>
     <div class="phone-canvas">
         <div class="top-hud">
-            <span id="level-num">Level: 1 / 100</span>
+            <a href="index.html" class="btn-home">🏠 首頁</a>
+            <span id="level-num">1 / 100</span>
             <div class="skip-box">
                 <input type="number" id="jump-input" class="input-level" min="1" max="100" value="1">
-                <button class="btn-skip" onclick="jumpToLevel()">Skip</button>
+                <button class="btn-skip" onclick="jumpToLevel()">跳關</button>
             </div>
-            <span id="score-num">Score: 0</span>
+            <span id="score-num">0分</span>
         </div>
         <div id="subtitle" class="speech-subtitle">點擊 START 開始中文朗讀挑戰！</div>
         <div class="stage-3d">
@@ -71,180 +61,95 @@
     </div>
 
     <script>
-        // 若 zh-words.js 載入失敗的預備資料
-        const defaultWords = [
-            { word: "蘋果", bpmf: "ㄆㄧㄥˊ ㄍㄨㄛˇ", emoji: "🍎" },
-            { word: "香蕉", bpmf: "ㄒㄧㄤ ㄐㄧㄠ", emoji: "🍌" },
-            { word: "貓咪", bpmf: "ㄇㄠ ㄇㄧ", emoji: "🐱" }
+        // 內建 100 題（包含國1、國2、國3三階段難度）
+        const wordList = [
+            // --- 國一水平 (1 - 33 題：基礎雙字詞與生活常用語) ---
+            { word: "蘋果", bpmf: "ㄆㄧㄥˊ ㄍㄨㄛˇ", emoji: "🍎" }, { word: "香蕉", bpmf: "ㄒㄧㄤ ㄐㄧㄠ", emoji: "🍌" },
+            { word: "貓咪", bpmf: "ㄇㄠ ㄇㄧ", emoji: "🐱" }, { word: "小狗", bpmf: "ㄒㄧㄠˇ ㄍㄡˇ", emoji: "🐶" },
+            { word: "大象", bpmf: "ㄉㄚˋ ㄒㄧㄤˋ", emoji: "🐘" }, { word: "花朵", bpmf: "ㄏㄨㄚ ㄉㄨㄛˇ", emoji: "🌸" },
+            { word: "太陽", bpmf: "ㄊㄞˋ ㄧㄤˊ", emoji: "☀️" }, { word: "月亮", bpmf: "ㄩㄝˋ ㄌㄧㄤˋ", emoji: "🌙" },
+            { word: "星星", bpmf: "ㄒㄧㄥ ㄒㄧㄥ", emoji: "⭐" }, { word: "彩虹", bpmf: " favorites", emoji: "🌈" },
+            { word: "學校", bpmf: "ㄒㄩㄝˊ ㄒㄧㄠˋ", emoji: "🏫" }, { word: "老師", bpmf: "ㄌㄠˇ ㄕ", emoji: "🧑‍🏫" },
+            { word: "同學", bpmf: "ㄊㄨㄥˊ ㄒㄩㄝˊ", emoji: "🧑‍🤝‍🧑" }, { word: "看書", bpmf: "ㄎㄢˋ ㄕㄨ", emoji: "📖" },
+            { word: "寫字", bpmf: "ㄒㄧㄝˇ ㄗˋ", emoji: "✍️" }, { word: "畫畫", bpmf: "ㄏㄨㄚˋ ㄏㄨㄚˋ", emoji: "🎨" },
+            { word: "唱歌", bpmf: "ㄔㄤˋ ㄍㄜ", emoji: "🎤" }, { word: "跳舞", bpmf: "ㄊㄧㄠˋ ㄨˇ", emoji: "💃" },
+            { word: "跑步", bpmf: "ㄆㄠˇ ㄅㄨˋ", emoji: "🏃" }, { word: "踢球", bpmf: "ㄊㄧ ㄑㄧㄡˊ", emoji: "⚽" },
+            { word: "騎車", bpmf: "ㄑㄧˊ ㄔㄜ", emoji: "🚲" }, { word: "飛機", bpmf: "ㄈㄟ ㄐㄧ", emoji: "✈️" },
+            { word: "輪船", bpmf: "ㄌㄨㄣˊ ㄔㄨㄢ", emoji: "🚢" }, { word: "汽車", bpmf: "ㄑㄧˋ ㄔㄜ", emoji: "🚗" },
+            { word: "西瓜", bpmf: "ㄒㄧ ㄍㄨㄚ", emoji: "🍉" }, { word: "草莓", bpmf: " favorites", emoji: "🍓" },
+            { word: "牛奶", bpmf: "ㄋㄧㄡˇ ㄋㄞˇ", emoji: "🥛" }, { word: "麵包", bpmf: "ㄇㄧㄢˋ ㄅㄠ", emoji: "🍞" },
+            { word: "米飯", bpmf: "ㄇㄧˇ ㄈㄢˋ", emoji: "🍚" }, { word: "青菜", bpmf: "ㄑㄧㄥ ㄘㄞˋ", emoji: "🥬" },
+            { word: "小鳥", bpmf: "ㄒㄧㄠˇ ㄋㄧㄠˇ", emoji: "🐦" }, { word: "游魚", bpmf: "ㄧㄡˊ ㄩˊ", emoji: "🐟" },
+            { word: "蝴蝶", bpmf: "ㄏㄨˊ ㄉㄧㄝˊ", emoji: "🦋" },
+
+            // --- 國二水平 (34 - 66 題：進階描述語與三字句) ---
+            { word: "美麗", bpmf: "ㄇㄟˇ ㄌㄧˋ", emoji: "✨" }, { word: "快樂", bpmf: "ㄎㄨㄞˋ ㄌㄜˋ", emoji: "😄" },
+            { word: "勇敢", bpmf: "ㄩㄥˇ ㄍㄢˇ", emoji: "🦁" }, { word: "聰明", bpmf: " favorites", emoji: "💡" },
+            { word: "禮貌", bpmf: "ㄌㄧˇ ㄇㄠˋ", emoji: "🙇" }, { word: "認真", bpmf: "ㄖㄣˋ ㄓㄣ", emoji: "🎯" },
+            { word: "勤勞", bpmf: "ㄑㄧㄣˊ ㄌㄠˊ", emoji: "🐝" }, { word: "誠實", bpmf: "ㄔㄥˊ ㄕˊ", emoji: "🤝" },
+            { word: "溫暖", bpmf: "ㄨㄣ ㄋㄨㄢˇ", emoji: "🔥" }, { word: "清涼", bpmf: "ㄑㄧㄥ ㄌㄧㄤˊ", emoji: "🍃" },
+            { word: "熱鬧", bpmf: "ㄖㄜˋ ㄋㄠˋ", emoji: "🎉" }, { word: "安靜", bpmf: "ㄢ ㄐㄧㄥˋ", emoji: "🤫" },
+            { word: "早安", bpmf: "ㄗㄠˇ ㄢ", emoji: "🌅" }, { word: "午安", bpmf: "ㄨˇ ㄢ", emoji: "☀️" },
+            { word: "晚安", bpmf: "ㄨㄢˇ ㄢ", emoji: "🌙" }, { word: "謝謝你", bpmf: "ㄒㄧㄝˋ ㄒㄧㄝˋ ㄋㄧˇ", emoji: "🙏" },
+            { word: "不客氣", bpmf: "ㄅㄨˋ ㄎㄜˋ ㄑㄧˋ", emoji: "😊" }, { word: "對不起", bpmf: "ㄉㄨㄟˋ ㄅㄨˋ ㄑㄧˇ", emoji: "🙇" }, { word: "沒關係", bpmf: "ㄇㄟˊ ㄍㄨㄢ ㄒㄧ", emoji: "👌" }, { word: "再見", bpmf: "ㄗㄞˋ ㄐㄧㄢˋ", emoji: "👋" },
+            { word: "加油", bpmf: "ㄐㄧㄚ ㄧㄡˊ", emoji: "💪" }, { word: "太棒了", bpmf: "ㄊㄞˋ ㄅㄤˋ ㄌㄜ˙", emoji: "👏" },
+            { word: "好朋友", bpmf: "ㄏㄠˇ ㄆㄥˊ ㄧㄡˇ", emoji: "👭" }, { word: "大自然", bpmf: "ㄉㄚˋ ㄗˋ ㄖㄢˊ", emoji: "🌲" },
+            { word: "圖書館", bpmf: "ㄊㄨˊ ㄕㄨ ㄍㄨㄢˇ", emoji: "📚" }, { word: "游樂園", bpmf: "ㄧㄡˊ ㄌㄜˋ ㄩㄢˊ", emoji: "🎡" },
+            { word: "植物園", bpmf: "ㄓˊ ㄨˋ ㄩㄢˊ", emoji: "🪴" }, { word: "動物園", bpmf: "ㄉㄨㄥˋ ㄨˋ ㄩㄢˊ", emoji: "🦒" },
+            { word: "博物館", bpmf: "ㄅㄛˊ ㄨˋ ㄍㄨㄢˇ", emoji: "🏛️" }, { word: "電影院", bpmf: "ㄉㄧㄢˋ ㄧㄥˇ ㄩㄢˋ", emoji: "🎬" },
+            { word: "體育館", bpmf: "ㄊㄧˇ ㄩˋ ㄍㄨㄢˇ", emoji: "🏟️" }, { word: "音樂會", bpmf: "ㄧㄣ ㄩㄝˋ ㄏㄨㄟˋ", emoji: "🎶" },
+            { word: "冰淇淋", bpmf: "ㄅㄧㄥ ㄑㄧˊ ㄌㄧㄣˊ", emoji: "🍦" },
+
+            // --- 國三水平 (67 - 100 題：四字成語與勵志短句) ---
+            { word: "一心一意", bpmf: "ㄧ ㄒㄧㄣ ㄧ ㄧˋ", emoji: "🎯" }, { word: "三心二意", bpmf: "ㄙㄢ ㄒㄧㄣ ㄦˋ ㄧˋ", emoji: "🤷" },
+            { word: "七上八下", bpmf: "ㄑㄧ ㄕㄤˋ ㄅㄚ ㄒㄧㄚˋ", emoji: "💓" }, { word: "九牛一毛", bpmf: "ㄐㄧㄡˇ ㄋㄧㄡ ㄧ ㄇㄠˊ", emoji: "🌾" }, { word: "十全十美", bpmf: "ㄕˊ ㄑㄩㄢˊ ㄕˊ ㄇㄟˇ", emoji: "💯" }, { word: "百發百中", bpmf: "ㄅㄞˇ ㄈㄚ ㄅㄞˇ ㄓㄨㄥˋ", emoji: "🏹" },
+            { word: "千方百計", bpmf: "ㄑㄧㄢ ㄈㄤ ㄅㄞˇ ㄐㄧˋ", emoji: "💡" }, { word: "萬無一失", bpmf: "ㄨㄢˋ ㄨˊ ㄧ ㄕ", emoji: "🛡️" },
+            { word: "春暖花開", bpmf: "ㄔㄨㄣ ㄋㄨㄢˇ ㄏㄨㄚ ㄎㄞ", emoji: "🌸" }, { word: "風和日麗", bpmf: "ㄈㄥ ㄏㄜˊ ㄖˋ ㄌㄧˋ", emoji: "🌤️" },
+            { word: "秋高氣爽", bpmf: "ㄑㄧㄡ ㄍㄠ ㄑㄧˋ ㄕㄨㄤˇ", emoji: "🍁" }, { word: "冰天雪地", bpmf: "ㄅㄧㄥ ㄊㄧㄢ ㄒㄩㄝˇ ㄉㄧˋ", emoji: "❄️" },
+            { word: "鳥語花香", bpmf: "ㄋㄧㄠˇ ㄩˇ ㄏㄨㄚ ㄒㄧㄤ", emoji: "🌺" }, { word: "山清水秀", bpmf: "ㄕㄢ ㄑㄧㄥ ㄑㄧㄡˇ ㄒㄧㄡˋ", emoji: "🏞️" },
+            { word: "大海撈針", bpmf: "ㄉㄚˋ ㄏㄞˇ ㄌㄠ ㄓㄣ", emoji: "🔍" }, { word: "畫蛇添足", bpmf: "ㄏㄨㄚˋ ㄕㄜˊ ㄊㄧㄢ ㄗㄨˊ", emoji: "🐍" },
+            { word: "井底之蛙", bpmf: "ㄐㄧㄥˇ ㄉㄧˇ ㄓ ㄨㄚ", emoji: "🐸" }, { word: "守株待兔", bpmf: "ㄕㄡˇ ㄓㄨ ㄉㄞˋ ㄊㄨˋ", emoji: "🐇" },
+            { word: "拔苗助長", bpmf: "ㄅㄚˊ ㄇㄧㄠˊ ㄓㄨˋ ㄓㄤˇ", emoji: "🌱" }, { word: "盲人摸象", bpmf: "ㄇㄤˊ ㄖㄣˊ ㄇㄛ ㄒㄧㄤˋ", emoji: "🐘" },
+            { word: "自相矛盾", bpmf: "ㄗˋ ㄒㄧㄤ ㄇㄠˊ ㄉㄨㄣˋ", emoji: "⚔️" }, { word: "亡羊補牢", bpmf: "ㄨㄤˊ ㄧㄤˊ ㄅㄨˇ ㄌㄠˊ", emoji: "🐑" },
+            { word: "熟能生巧", bpmf: "ㄕㄡˊ ㄋㄥˊ ㄕㄥ ㄑㄧㄠˇ", emoji: "⚙️" }, { word: "溫故知新", bpmf: "ㄨㄣ ㄍㄨˋ ㄓ ㄒㄧㄣ", emoji: "📘" },
+            { word: "舉一反三", bpmf: "ㄐㄩˇ ㄧ ㄈㄢˇ ㄙㄢ", emoji: "🧠" }, { word: "循序漸進", bpmf: "ㄒㄩㄣˊ ㄒㄩˋ ㄐㄧㄢˋ ㄐㄧㄣˋ", emoji: "📈" },
+            { word: "持之以恆", bpmf: "ㄔˊ ㄓ ㄧˇ ㄏㄥˊ", emoji: "⏳" }, { word: "永不放棄", bpmf: "ㄩㄥˇ ㄅㄨˋ ㄈㄤˋ ㄑㄧˋ", emoji: "🔥" },
+            { word: "相信自己", bpmf: "ㄒㄧㄤ ㄒㄧㄣˋ ㄗˋ ㄐㄧˇ", emoji: "⭐" }, { word: "美夢成真", bpmf: "ㄇㄟˇ ㄇㄥˋ ㄔㄥˊ ㄓㄣ", emoji: "🌟" },
+            { word: "前程似錦", bpmf: "ㄑㄧㄢˊ ㄔㄥˊ ㄙˋ ㄐㄧㄣˇ", emoji: "🎓" }, { word: "一帆風順", bpmf: "ㄧ ㄈㄢ ㄈㄥ ㄕㄨㄣˋ", emoji: "⛵" },
+            { word: "勇往直前", bpmf: "ㄩㄥˇ ㄨㄤˇ ㄓˊ ㄑㄧㄢˊ", emoji: "🚀" }, { word: "鵬程萬里", bpmf: "ㄆㄥˊ ㄔㄥˊ ㄨㄢˋ ㄌㄧˇ", emoji: "🦅" }
         ];
 
-        const wordList = (typeof zhWords !== 'undefined') ? zhWords : defaultWords;
-        
         let currentIdx = 0, score = 0, isPlaying = false, recognition = null, audioCtx = null;
-        
-        const actionBtn = document.getElementById('action-btn'),
-              subtitleTxt = document.getElementById('subtitle'),
-              wordZhTxt = document.getElementById('word-zh'),
-              wordBpmfTxt = document.getElementById('word-bpmf'),
-              emojiTxt = document.getElementById('emoji'),
-              levelTxt = document.getElementById('level-num'),
-              scoreTxt = document.getElementById('score-num'),
-              challengeCard = document.getElementById('challenge-card'),
-              jumpInput = document.getElementById('jump-input');
-        
+        const actionBtn = document.getElementById('action-btn'), subtitleTxt = document.getElementById('subtitle'), wordZhTxt = document.getElementById('word-zh'), wordBpmfTxt = document.getElementById('word-bpmf'), emojiTxt = document.getElementById('emoji'), levelTxt = document.getElementById('level-num'), scoreTxt = document.getElementById('score-num'), challengeCard = document.getElementById('challenge-card'), jumpInput = document.getElementById('jump-input');
+
         challengeCard.onanimationend = function() { if (isPlaying) handleWrongAnswer(); };
-        
-        function playSound(type) {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            if (type === 'correct') {
-                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
-                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.25);
-            } else {
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(220, audioCtx.currentTime);
-                osc.frequency.setValueAtTime(146, audioCtx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-            }
-        }
-        
-        function initSpeechEngine() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                subtitleTxt.innerText = '瀏覽器不支援語音辨識，請使用 Chrome！';
-                return false;
-            }
-            recognition = new SpeechRecognition();
-            recognition.lang = 'zh-TW';
-            recognition.interimResults = false;
-            recognition.continuous = false;
-            
-            recognition.onstart = function() {
-                if (isPlaying) subtitleTxt.innerText = '🎤 正在聆聽... 請唸出：「' + wordList[currentIdx].word + '」';
-            };
-            
-            recognition.onresult = function(event) {
-                if (!isPlaying) return;
-                let userSpeech = event.results[0][0].transcript;
-                if (userSpeech) {
-                    subtitleTxt.innerText = '🗣️ 聽到：「' + userSpeech + '」';
-                    let target = wordList[currentIdx].word;
-                    if (userSpeech.includes(target) || target.includes(userSpeech)) {
-                        handleCorrectAnswer();
-                    }
-                }
-            };
-            
-            recognition.onend = function() {
-                if (isPlaying) {
-                    setTimeout(function() { try { recognition.start(); } catch(e) {} }, 50);
-                }
-            };
-            return true;
-        }
-        
-        function toggleGame() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (!recognition && !initSpeechEngine()) return;
-            
-            if (isPlaying) {
-                isPlaying = false;
-                actionBtn.innerText = 'START';
-                actionBtn.classList.remove('active');
-                subtitleTxt.innerText = '遊戲已暫停';
-                challengeCard.classList.remove('card-approach');
-                recognition.stop();
-            } else {
-                isPlaying = true;
-                actionBtn.innerText = 'LISTENING...';
-                actionBtn.classList.add('active');
-                scoreTxt.innerText = 'Score: ' + score;
-                updateCardUI();
-                try { recognition.start(); } catch(e) {}
-            }
-        }
-        
-        function handleCorrectAnswer() {
-            playSound('correct');
-            score += 10;
-            scoreTxt.innerText = 'Score: ' + score;
-            subtitleTxt.innerText = '🎉 發音正確！過關！';
-            challengeCard.classList.remove('card-approach');
-            isPlaying = false;
-            if (recognition) recognition.stop();
-            
-            setTimeout(function() {
-                currentIdx++;
-                if (currentIdx < wordList.length) {
-                    isPlaying = true;
-                    updateCardUI();
-                    try { recognition.start(); } catch(e) {}
-                } else {
-                    displayVictory();
-                }
-            }, 1200);
-        }
-        
-        function handleWrongAnswer() {
-            playSound('wrong');
-            subtitleTxt.innerText = '❌ 時間到/沒聽清，退回重新挑戰！';
-            isPlaying = false;
-            if (recognition) recognition.stop();
-            challengeCard.classList.remove('card-approach');
-            challengeCard.classList.add('card-fallback');
-            
-            setTimeout(function() {
-                challengeCard.classList.remove('card-fallback');
-                isPlaying = true;
-                updateCardUI();
-                try { recognition.start(); } catch(e) {}
-            }, 400);
-        }
-        
-        /* 核心跳關邏輯 */
-        function jumpToLevel() {
-            let targetLevel = parseInt(jumpInput.value);
-            if (isNaN(targetLevel) || targetLevel < 1 || targetLevel > wordList.length) return;
-            
-            currentIdx = targetLevel - 1;
-            subtitleTxt.innerText = '⏭️ 已跳至第 ' + targetLevel + ' 關';
-            challengeCard.classList.remove('card-approach');
-            if (recognition) recognition.stop();
-            
-            updateCardUI();
-            if (isPlaying) {
-                try { recognition.start(); } catch(e) {}
-            }
-        }
-        
+
+        function playSound(type) { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); if (type === 'correct') { osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.25); } else { osc.type = 'triangle'; osc.frequency.setValueAtTime(220, audioCtx.currentTime); osc.frequency.setValueAtTime(146, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.3); } }
+
+        function initSpeechEngine() { const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SpeechRecognition) { subtitleTxt.innerText = '瀏覽器不支援語音辨識，請使用 Chrome！'; return false; } recognition = new SpeechRecognition(); recognition.lang = 'zh-TW'; recognition.interimResults = false; recognition.continuous = false; recognition.onstart = function() { if (isPlaying) subtitleTxt.innerText = '🎤 正在聆聽... 請唸出：「' + wordList[currentIdx].word + '」'; }; recognition.onresult = function(event) { if (!isPlaying) return; let userSpeech = event.results[0][0].transcript; if (userSpeech) { subtitleTxt.innerText = '🗣️ 聽到：「' + userSpeech + '」'; let target = wordList[currentIdx].word; if (userSpeech.includes(target) || target.includes(userSpeech)) { handleCorrectAnswer(); } } }; recognition.onend = function() { if (isPlaying) { setTimeout(function() { try { recognition.start(); } catch(e) {} }, 50); } }; return true; }
+
+        function toggleGame() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (!recognition && !initSpeechEngine()) return; if (isPlaying) { isPlaying = false; actionBtn.innerText = 'START'; actionBtn.classList.remove('active'); subtitleTxt.innerText = '遊戲已暫停'; challengeCard.classList.remove('card-approach'); recognition.stop(); } else { isPlaying = true; actionBtn.innerText = 'LISTENING...'; actionBtn.classList.add('active'); scoreTxt.innerText = score + '分'; updateCardUI(); try { recognition.start(); } catch(e) {} } }
+
+        function handleCorrectAnswer() { playSound('correct'); score += 10; scoreTxt.innerText = score + '分'; subtitleTxt.innerText = '🎉 發音正確！過關！'; challengeCard.classList.remove('card-approach'); isPlaying = false; if (recognition) recognition.stop(); setTimeout(function() { currentIdx++; if (currentIdx < wordList.length) { isPlaying = true; updateCardUI(); try { recognition.start(); } catch(e) {} } else { displayVictory(); } }, 1200); }
+
+        function handleWrongAnswer() { playSound('wrong'); subtitleTxt.innerText = '❌ 退回重新挑戰！'; isPlaying = false; if (recognition) recognition.stop(); challengeCard.classList.remove('card-approach'); challengeCard.classList.add('card-fallback'); setTimeout(function() { challengeCard.classList.remove('card-fallback'); isPlaying = true; updateCardUI(); try { recognition.start(); } catch(e) {} }, 400); }
+
+        function jumpToLevel() { let targetLevel = parseInt(jumpInput.value); if (isNaN(targetLevel) || targetLevel < 1 || targetLevel > wordList.length) return; currentIdx = targetLevel - 1; subtitleTxt.innerText = '⏭️ 跳至第 ' + targetLevel + ' 關'; challengeCard.classList.remove('card-approach'); if (recognition) recognition.stop(); updateCardUI(); if (isPlaying) { try { recognition.start(); } catch(e) {} } }
+
         function updateCardUI() {
-            levelTxt.innerText = 'Level: ' + (currentIdx + 1) + ' / ' + wordList.length;
+            let stageText = currentIdx < 33 ? " (國1)" : (currentIdx < 66 ? " (國2)" : " (國3)");
+            levelTxt.innerText = (currentIdx + 1) + " / 100" + stageText;
             jumpInput.value = currentIdx + 1;
-            jumpInput.max = wordList.length;
-            
             wordZhTxt.innerText = wordList[currentIdx].word;
             wordBpmfTxt.innerText = wordList[currentIdx].bpmf || '';
             emojiTxt.innerText = wordList[currentIdx].emoji || '📖';
-            
             challengeCard.classList.remove('card-approach');
-            void challengeCard.offsetWidth; // 觸發重繪以重設動畫
+            void challengeCard.offsetWidth;
             if (isPlaying) challengeCard.classList.add('card-approach');
         }
-        
-        function displayVictory() {
-            isPlaying = false;
-            if (recognition) recognition.stop();
-            emojiTxt.innerText = '🏆';
-            wordZhTxt.innerText = '挑戰成功！';
-            wordBpmfTxt.innerText = '';
-            subtitleTxt.innerText = '🔥 太棒了！你完成了全部 ' + wordList.length + ' 關！';
-            actionBtn.style.display = 'none';
-        }
-        
+
+        function displayVictory() { isPlaying = false; if (recognition) recognition.stop(); emojiTxt.innerText = '🏆'; wordZhTxt.innerText = '挑戰成功！'; wordBpmfTxt.innerText = ''; subtitleTxt.innerText = '🔥 太棒了！你完成了全部 100 關！'; actionBtn.style.display = 'none'; }
+
         setTimeout(updateCardUI, 200);
     </script>
 </body>
